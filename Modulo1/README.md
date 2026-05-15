@@ -1,20 +1,18 @@
-# Módulo 1: Arquitectura de Software y Patrones
+# Módulo 1 — Arquitectura de Software y Patrones
 
-Este módulo cubre los fundamentos prácticos de arquitectura de software aplicados con .NET durante las primeras 8 semanas del curso.
+## Enfoque
+
+Este módulo usa .NET y SQL Server para explicar arquitectura de software desde una perspectiva práctica, pero con énfasis conceptual.
 
 ## Semanas
 
-| Semana | Tema | Resultado práctico |
-|---:|---|---|
-| 1 | SOLID y Clean Code | API limpia con servicios, repositorios e interfaces |
-| 2 | Patrones de diseño | Console app con Factory, Builder, Adapter y Decorator |
-| 3 | Monolito vs Microservicios | Monolito modular Catalog/Orders |
-| 4 | APIs profesionales | API con Swagger/OpenAPI y contratos claros |
-| 5 | Mensajería | Event bus en memoria y worker consumidor |
-| 6 | SQL vs NoSQL | API con EF Core SQLite y documentos JSON |
-| 7 | OAuth2 y JWT | API segura con JWT, roles y políticas |
-| 8 | Integrador | TaskFlow backend + frontend moderno |
-
-## Proyecto integrador
-
-Ver carpeta [`ProyectoIntegrador`](./ProyectoIntegrador).
+| Semana | Tema |
+|---|---|
+| 1 | SOLID y Clean Code |
+| 2 | Patrones de diseño |
+| 3 | Monolito vs microservicios |
+| 4 | APIs profesionales |
+| 5 | Comunicación asíncrona |
+| 6 | SQL vs NoSQL |
+| 7 | Seguridad OAuth2/JWT |
+| 8 | Proyecto integrador |

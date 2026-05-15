@@ -1,216 +1,180 @@
 # Semana 8: Laboratorio integrador backend + frontend moderno
 
-> Módulo 1: Arquitectura de Software y Patrones  
-> Duración de clase: **1h30**  
-> Modalidad: **teoría visual + laboratorio guiado + tarea desde cero**
+## Enfoque de la semana
+
+Integrar lo aprendido en una aplicación .NET con API, Blazor, SQL Server, JWT, OpenAPI, Outbox y documentación.
+
+
+## 1. Mapa de aprendizaje
+
+La semana 8 consolida el módulo.
+
+El estudiante debe demostrar que puede unir:
+
+- Diseño limpio.
+- Patrones.
+- Monolito modular.
+- API profesional.
+- SQL Server.
+- Outbox.
+- JWT.
+- Blazor.
+- Documentación.
 
 ---
 
-## 1. Objetivos de aprendizaje
+## 2. Explicación conceptual detallada
 
-- Integrar SOLID, patrones, APIs, mensajería, persistencia y seguridad en una solución completa.
-- Construir un backend .NET con módulos, JWT, Swagger y persistencia.
-- Conectar un frontend moderno con endpoints protegidos.
-- Preparar la entrega del proyecto integrador del Módulo 1.
+### 2.1 Qué significa integrar
+
+Integrar no es juntar código.  
+Integrar significa que las piezas colaboran respetando límites.
+
+Una mala integración:
+
+- Blazor accede directamente a SQL Server.
+- El endpoint contiene toda la lógica.
+- La entidad no protege reglas.
+- Se envían notificaciones sin consistencia.
+- La seguridad se aplica solo en la UI.
+- No hay documentación de decisiones.
+
+Una buena integración:
+
+- Blazor consume API.
+- API protege contratos y seguridad.
+- Application ejecuta casos de uso.
+- Domain protege reglas.
+- EF Core persiste.
+- SQL Server valida integridad.
+- Outbox registra eventos.
+- OpenAPI documenta.
+- ADRs justifican decisiones.
 
 ---
 
-## 2. Agenda sugerida de la clase
-
-| Tiempo | Actividad |
-|---|---|
-| 00:00 - 00:10 | Presentación del caso integrador: TaskFlow. |
-| 00:10 - 00:25 | Arquitectura objetivo y criterios de evaluación. |
-| 00:25 - 01:15 | Laboratorio guiado: backend + frontend. |
-| 01:15 - 01:25 | Checklist de entrega y demostración. |
-| 01:25 - 01:30 | Asignación formal del proyecto integrador. |
-
----
-
-## 3. Teoría resumida y didáctica
-
-### Idea central
-
-Esta semana se trabaja el tema **Laboratorio integrador backend + frontend moderno** desde una perspectiva práctica. La meta no es memorizar definiciones, sino aprender a tomar decisiones técnicas justificadas y aplicarlas en código .NET.
-
-### Explicación visual
+## 3. Diagrama mental
 
 ```mermaid
-flowchart LR
-    U[Usuario] --> W[React Frontend]
-    W -->|JWT Bearer| A[TaskFlow.Api]
-    A --> B[Auth Module]
-    A --> C[Projects Module]
-    A --> D[Tasks Module]
-    A --> E[(SQLite)]
-    D --> F[(InMemory Event Bus)]
-    F --> G[Notification Worker]
-    A --> H[Swagger/OpenAPI]
+flowchart TB
+    User[Usuario]
+    Blazor[Blazor Frontend]
+    Api[ASP.NET Core API]
+    Auth[JWT + Policies]
+    App[Application Layer]
+    Domain[Domain Model]
+    Ef[EF Core]
+    Sql[(SQL Server)]
+    Outbox[Outbox Worker]
+    Docs[OpenAPI Docs]
+
+    User --> Blazor
+    Blazor --> Api
+    Api --> Auth
+    Api --> App
+    App --> Domain
+    App --> Ef
+    Ef --> Sql
+    App --> Outbox
+    Outbox --> Sql
+    Api --> Docs
 ```
-
-### Mapa mental rápido
-
-```text
-TaskFlow integra:
-SOLID + Patrones + API REST + Swagger + JWT + SQL + Eventos + Frontend
-```
-
-### Conceptos clave
-
-| Concepto | Explicación práctica | Error común |
-|---|---|---|
-| Responsabilidad | Cada componente debe tener una razón clara para cambiar. | Crear clases que validan, calculan, persisten y responden HTTP al mismo tiempo. |
-| Acoplamiento | Grado de dependencia entre partes del sistema. | Consumir clases concretas en todas partes sin contratos. |
-| Contrato | Acuerdo explícito entre componentes o sistemas. | Cambiar requests/responses sin documentarlo. |
-| Trade-off | Costo técnico aceptado por una decisión. | Elegir una tecnología sin explicar qué se gana y qué se pierde. |
 
 ---
 
-## 4. Laboratorio guiado: TaskFlow integrador backend + frontend
+## 4. Proyecto integrador: AcademyOps
 
-### Resultado esperado
+AcademyOps es una plataforma académica simple.
 
-Al final de la sesión, el estudiante tendrá una solución .NET funcional, documentada y lista para extender en la tarea.
+Debe permitir:
 
-### Comandos base
-
-```bash
-# Desde la raíz del repositorio
-cd Modulo1/Semana8/src/backend/TaskFlow.Api && dotnet run
-```
-
-### Paso 1: revisar la estructura
-
-```text
-src/
-└── <Proyecto .NET>
-    ├── Program.cs
-    ├── *.csproj
-    ├── Models/
-    ├── Services/
-    ├── Infrastructure/
-    └── README interno opcional
-```
-
-Puntos para explicar en clase:
-
-1. Qué responsabilidad tiene cada carpeta.
-2. Qué clases pertenecen al dominio y cuáles son infraestructura.
-3. Qué dependencias deberían apuntar hacia contratos y no hacia implementaciones.
-4. Qué partes podrían reemplazarse sin afectar toda la solución.
-
-### Paso 2: ejecutar la aplicación
-
-```bash
-cd Modulo1/Semana8/src/backend/TaskFlow.Api && dotnet run
-```
-
-Si el proyecto es una API, abrir:
-
-```text
-http://localhost:5000
-http://localhost:5000/swagger
-```
-
-> Si el puerto cambia, revisar la consola de `dotnet run`.
-
-### Paso 3: probar los endpoints o ejecución
-
-Usar `curl`, Postman, Insomnia o el archivo `.http` incluido cuando exista.
-
-Ejemplo general:
-
-```bash
-curl http://localhost:5000/health
-```
-
-### Paso 4: identificar la decisión arquitectónica
-
-Durante la clase, el estudiante debe responder:
-
-- ¿Qué problema resuelve esta estructura?
-- ¿Qué parte del código cambiaría si aparece un nuevo requisito?
-- ¿Qué clase sería la primera en crecer peligrosamente?
-- ¿Qué prueba manual demuestra que el flujo funciona?
-
-### Paso 5: extender en vivo
-
-Agregar una pequeña mejora durante la sesión:
-
-- Nuevo endpoint.
-- Nueva regla de negocio.
-- Nueva implementación de una interfaz.
-- Nueva validación.
-- Nuevo caso de error documentado.
+- Administrar cursos.
+- Administrar estudiantes.
+- Matricular estudiantes.
+- Publicar cursos.
+- Registrar eventos Outbox.
+- Mostrar datos desde Blazor.
+- Proteger operaciones por rol.
+- Documentar API.
 
 ---
 
-## 5. Checklist de laboratorio
+## 5. Módulos mínimos
 
-- [ ] El proyecto compila.
-- [ ] El estudiante puede explicar el flujo principal.
-- [ ] Hay separación entre endpoint, lógica y persistencia.
-- [ ] Hay al menos una prueba manual documentada.
-- [ ] El README de la semana fue leído y usado durante la clase.
-- [ ] La mejora en vivo quedó registrada en Git.
-
----
-
-## 6. Tarea desde cero
-
-### Enunciado
-
-Completar el proyecto integrador TaskFlow agregando roles, filtros por usuario, documentación de endpoints y una mejora arquitectónica justificada.
-
-### Requisitos mínimos
-
-- Crear un nuevo proyecto independiente dentro de una carpeta `tarea/mi-solucion`.
-- Usar nombres claros en clases, métodos y carpetas.
-- Incluir README propio con:
-  - Problema resuelto.
-  - Diagrama Mermaid.
-  - Instrucciones de ejecución.
-  - Endpoints o ejemplos de uso.
-  - Decisiones técnicas y trade-offs.
-- Subir evidencia a GitHub.
-
-### Criterios de aceptación
-
-| Criterio | Esperado |
+| Módulo | Responsabilidad |
 |---|---|
-| Funcionalidad | La solución ejecuta y demuestra el flujo principal. |
-| Diseño | Hay separación clara de responsabilidades. |
-| Código | Métodos pequeños, nombres claros y validaciones básicas. |
-| Documentación | README comprensible para otro desarrollador. |
-| Evidencia | Incluye comandos, capturas o ejemplos JSON. |
+| Courses | Crear, listar y publicar cursos |
+| Students | Crear, listar y activar/desactivar estudiantes |
+| Enrollments | Matricular estudiantes en cursos |
+| Security | Login simulado y generación JWT |
+| Notifications | Outbox para eventos internos |
 
 ---
 
-## 7. Rúbrica sugerida
+## 6. Reglas de arquitectura obligatorias
 
-| Nivel | Descripción |
-|---|---|
-| Excelente | Implementa el flujo completo, justifica decisiones, documenta trade-offs y mantiene código limpio. |
-| Bueno | Implementa el flujo principal con estructura clara y documentación suficiente. |
-| En proceso | Funciona parcialmente, pero mezcla responsabilidades o tiene documentación incompleta. |
-| Insuficiente | No ejecuta, no documenta o no evidencia comprensión del tema. |
-
----
-
-## 8. Recursos adicionales
-
-- [ASP.NET Core documentation](https://learn.microsoft.com/aspnet/core/)
-- [React documentation](https://react.dev/learn)
-- [Vite documentation](https://vite.dev/guide/)
-- [Entity Framework Core](https://learn.microsoft.com/ef/core/)
-- [OWASP API Security Top 10](https://owasp.org/API-Security/)
+1. No acceder a SQL Server desde Blazor.
+2. No exponer entidades EF como respuesta HTTP.
+3. Usar DTOs.
+4. Usar al menos una policy de autorización.
+5. Usar SQL Server con constraints.
+6. Registrar al menos dos eventos Outbox.
+7. Documentar endpoints con OpenAPI.
+8. Crear al menos dos ADRs.
+9. Incluir diagrama Mermaid.
+10. Incluir README técnico.
 
 ---
 
-## 9. Cierre de clase
+## 7. Evaluación
 
-Preguntas de reflexión:
+| Criterio | Peso |
+|---|---:|
+| Arquitectura | 20% |
+| API | 15% |
+| Frontend Blazor | 15% |
+| SQL Server | 15% |
+| Seguridad | 10% |
+| Outbox | 10% |
+| Documentación | 10% |
+| Calidad general | 5% |
 
-1. ¿Qué decisión técnica tomada hoy reduce mantenimiento futuro?
-2. ¿Qué parte del laboratorio sería riesgosa en producción?
-3. ¿Qué métrica, prueba o evidencia usarías para demostrar que el diseño funciona?
+---
+
+## 8. Entrega esperada
+
+```text
+ProyectoIntegrador/
+├── README.md
+├── backend/
+├── frontend/
+├── database/
+├── arquitectura/
+│   ├── contexto.mmd
+│   ├── contenedores.mmd
+│   └── decisiones/
+└── evidencias/
+```
+
+---
+
+## 9. Recursos adicionales
+
+- Microsoft Learn — ASP.NET Core.
+- Microsoft Learn — Blazor.
+- Microsoft Learn — EF Core SQL Server.
+- Microsoft Learn — OpenAPI.
+- Microsoft Learn — JWT Bearer.
+- OWASP API Security.
+
+
+---
+
+## Checklist de estudio
+
+- [ ] Comprendí los conceptos principales.
+- [ ] Revisé los diagramas.
+- [ ] Leí las plantillas de código.
+- [ ] Puedo explicar la decisión arquitectónica.
+- [ ] Puedo implementar una variante desde cero.
+- [ ] Registré al menos una decisión en formato ADR.

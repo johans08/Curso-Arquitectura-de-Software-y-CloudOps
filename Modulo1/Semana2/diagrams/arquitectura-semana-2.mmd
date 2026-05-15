@@ -1,0 +1,13 @@
+flowchart LR
+    UseCase[Use Case]
+    Factory[Factory]
+    Strategy[Strategy]
+    Adapter[Adapter]
+    Decorator[Decorator]
+    External[External Detail]
+
+    UseCase --> Factory
+    UseCase --> Strategy
+    UseCase --> Decorator
+    Decorator --> Adapter
+    Adapter --> External

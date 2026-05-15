@@ -1,229 +1,207 @@
-# Semana 3: Arquitectura Monolítica vs Microservicios
+# Semana 3: Arquitectura monolítica vs microservicios
 
-> Módulo 1: Arquitectura de Software y Patrones  
-> Duración de clase: **1h30**  
-> Modalidad: **teoría visual + laboratorio guiado + tarea desde cero**
+## Enfoque de la semana
 
----
+Distinguir monolito tradicional, monolito modular y microservicios, usando criterios reales de decisión.
 
-## 1. Objetivos de aprendizaje
 
-- Comparar monolito, monolito modular y microservicios con criterios técnicos y organizacionales.
-- Identificar límites de módulos usando capacidades de negocio.
-- Construir un monolito modular simple en .NET.
-- Separar conceptualmente servicios Catalog y Orders para comprender comunicación entre procesos.
+## 1. Mapa de aprendizaje
+
+El objetivo de esta semana es evitar un error frecuente: pensar que microservicios siempre significa mejor arquitectura.
+
+Un sistema puede fracasar por ser demasiado simple para sus necesidades, pero también puede fracasar por ser innecesariamente complejo.
 
 ---
 
-## 2. Agenda sugerida de la clase
+## 2. Explicación conceptual detallada
 
-| Tiempo | Actividad |
-|---|---|
-| 00:00 - 00:10 | Contexto: por qué no todo debe iniciar como microservicio. |
-| 00:10 - 00:35 | Teoría visual: despliegue, datos, equipos y comunicación. |
-| 00:35 - 01:15 | Laboratorio: modular monolith con dos módulos. |
-| 01:15 - 01:25 | Discusión: cómo evolucionar hacia microservicios. |
-| 01:25 - 01:30 | Tarea y criterios de arquitectura. |
+### 2.1 Monolito tradicional
+
+Un monolito tradicional es una aplicación desplegada como una sola unidad, donde las responsabilidades internas están mezcladas.
+
+No todo monolito es malo. El problema aparece cuando:
+
+- No hay límites internos.
+- Todo módulo puede modificar cualquier tabla.
+- Los controladores llaman directamente cualquier servicio.
+- No existen reglas de dependencia.
+- La base de datos se convierte en el único punto de integración.
+
+### 2.2 Monolito modular
+
+Un monolito modular sigue desplegándose como una sola aplicación, pero se divide internamente en módulos.
+
+Ejemplo:
+
+- Cursos.
+- Estudiantes.
+- Matrículas.
+- Evaluaciones.
+- Notificaciones.
+
+Cada módulo tiene:
+
+- Casos de uso propios.
+- Entidades propias.
+- Endpoints propios.
+- Tablas propias, idealmente en esquemas separados.
+- Reglas claras de dependencia.
+
+Este será el enfoque principal del módulo porque permite aprender diseño de límites sin introducir complejidad operacional.
+
+### 2.3 Microservicios
+
+Microservicios son servicios pequeños y autónomos, cada uno desplegable de forma independiente.
+
+Un microservicio profesional debería:
+
+- Tener responsabilidad de negocio clara.
+- Ser dueño de sus datos.
+- Desplegarse de forma independiente.
+- Comunicarse por contratos.
+- Tolerar fallos parciales.
+- Tener observabilidad.
+- Tener estrategia DevOps madura.
+
+Microservicios no son simplemente “varios proyectos .NET”.
+
+### 2.4 Costo oculto de microservicios
+
+Microservicios introducen:
+
+- Latencia de red.
+- Versionamiento de contratos.
+- Observabilidad distribuida.
+- Seguridad entre servicios.
+- Consistencia eventual.
+- Deployments independientes.
+- Manejo de fallos parciales.
+- Duplicación controlada de datos.
+- Mayor exigencia de automatización.
+
+Por eso, muchas organizaciones deberían iniciar con un monolito modular bien diseñado.
 
 ---
 
-## 3. Teoría resumida y didáctica
-
-### Idea central
-
-Esta semana se trabaja el tema **Arquitectura Monolítica vs Microservicios** desde una perspectiva práctica. La meta no es memorizar definiciones, sino aprender a tomar decisiones técnicas justificadas y aplicarlas en código .NET.
-
-### Explicación visual
+## 3. Diagrama mental
 
 ```mermaid
 flowchart TB
-    subgraph Monolito_Modular[Monolito modular]
-      A[API única]
-      B[Catalog Module]
-      C[Orders Module]
-      D[(Base de datos compartida)]
-      A --> B
-      A --> C
-      B --> D
-      C --> D
+    subgraph ModularMonolith[Monolito Modular]
+        UI[Blazor]
+        API[API]
+        Catalog[Modulo Cursos]
+        Enrollment[Modulo Matriculas]
+        Billing[Modulo Pagos]
+        DB[(SQL Server compartido con esquemas)]
     end
 
-    subgraph Microservicios[Microservicios]
-      E[Catalog API] --> F[(Catalog DB)]
-      G[Orders API] --> H[(Orders DB)]
-      G -. HTTP/Event .-> E
-    end
+    UI --> API
+    API --> Catalog
+    API --> Enrollment
+    API --> Billing
+    Catalog --> DB
+    Enrollment --> DB
+    Billing --> DB
 ```
 
-### Mapa mental rápido
+---
 
-```text
-Monolito modular:
-- Un despliegue.
-- Un proceso.
-- Módulos internos bien separados.
+## 4. Matriz de decisión
 
-Microservicios:
-- Múltiples despliegues.
-- Datos por servicio.
-- Comunicación remota y operación más compleja.
-```
-
-### Conceptos clave
-
-| Concepto | Explicación práctica | Error común |
+| Pregunta | Monolito modular | Microservicios |
 |---|---|---|
-| Responsabilidad | Cada componente debe tener una razón clara para cambiar. | Crear clases que validan, calculan, persisten y responden HTTP al mismo tiempo. |
-| Acoplamiento | Grado de dependencia entre partes del sistema. | Consumir clases concretas en todas partes sin contratos. |
-| Contrato | Acuerdo explícito entre componentes o sistemas. | Cambiar requests/responses sin documentarlo. |
-| Trade-off | Costo técnico aceptado por una decisión. | Elegir una tecnología sin explicar qué se gana y qué se pierde. |
+| ¿Equipo pequeño? | Sí | No ideal |
+| ¿Dominio aún cambia mucho? | Sí | Riesgoso |
+| ¿Necesidad de escalar partes por separado? | Limitado | Sí |
+| ¿Deploy independiente por equipo? | No | Sí |
+| ¿Observabilidad madura? | No necesaria al inicio | Obligatoria |
+| ¿Base de datos por servicio? | No | Sí |
+| ¿Tolerancia a consistencia eventual? | No siempre | Necesaria |
 
 ---
 
-## 4. Laboratorio guiado: ModularMonolith.Api con módulos Catalog y Orders
+## 5. Aplicación en .NET + SQL Server
 
-### Resultado esperado
+Durante este módulo se recomienda:
 
-Al final de la sesión, el estudiante tendrá una solución .NET funcional, documentada y lista para extender en la tarea.
+- Una solución .NET.
+- Una API.
+- Un frontend Blazor.
+- Un SQL Server.
+- Módulos internos separados por carpeta y esquema SQL.
 
-### Comandos base
-
-```bash
-# Desde la raíz del repositorio
-cd Modulo1/Semana3/src/ModularMonolith.Api && dotnet run
-```
-
-### Paso 1: revisar la estructura
+Ejemplo:
 
 ```text
-src/
-└── <Proyecto .NET>
-    ├── Program.cs
-    ├── *.csproj
-    ├── Models/
-    ├── Services/
-    ├── Infrastructure/
-    └── README interno opcional
+Features/
+├── Courses/
+├── Students/
+├── Enrollments/
+└── Notifications/
 ```
 
-Puntos para explicar en clase:
-
-1. Qué responsabilidad tiene cada carpeta.
-2. Qué clases pertenecen al dominio y cuáles son infraestructura.
-3. Qué dependencias deberían apuntar hacia contratos y no hacia implementaciones.
-4. Qué partes podrían reemplazarse sin afectar toda la solución.
-
-### Paso 2: ejecutar la aplicación
-
-```bash
-cd Modulo1/Semana3/src/ModularMonolith.Api && dotnet run
-```
-
-Si el proyecto es una API, abrir:
+En SQL Server:
 
 ```text
-http://localhost:5000
-http://localhost:5000/swagger
+academy.Courses
+academy.Students
+academy.Enrollments
+academy.OutboxMessages
 ```
 
-> Si el puerto cambia, revisar la consola de `dotnet run`.
+---
 
-### Paso 3: probar los endpoints o ejecución
+## 6. Errores comunes
 
-Usar `curl`, Postman, Insomnia o el archivo `.http` incluido cuando exista.
-
-Ejemplo general:
-
-```bash
-curl http://localhost:5000/health
-```
-
-### Paso 4: identificar la decisión arquitectónica
-
-Durante la clase, el estudiante debe responder:
-
-- ¿Qué problema resuelve esta estructura?
-- ¿Qué parte del código cambiaría si aparece un nuevo requisito?
-- ¿Qué clase sería la primera en crecer peligrosamente?
-- ¿Qué prueba manual demuestra que el flujo funciona?
-
-### Paso 5: extender en vivo
-
-Agregar una pequeña mejora durante la sesión:
-
-- Nuevo endpoint.
-- Nueva regla de negocio.
-- Nueva implementación de una interfaz.
-- Nueva validación.
-- Nuevo caso de error documentado.
+- Dividir servicios por tabla.
+- Crear microservicios sin CI/CD.
+- Compartir una misma base entre microservicios y decir que son independientes.
+- Usar HTTP interno para todo.
+- No considerar transacciones distribuidas.
+- Copiar arquitectura de empresas grandes sin tener sus problemas.
 
 ---
 
-## 5. Checklist de laboratorio
+## 7. Práctica de refuerzo
 
-- [ ] El proyecto compila.
-- [ ] El estudiante puede explicar el flujo principal.
-- [ ] Hay separación entre endpoint, lógica y persistencia.
-- [ ] Hay al menos una prueba manual documentada.
-- [ ] El README de la semana fue leído y usado durante la clase.
-- [ ] La mejora en vivo quedó registrada en Git.
+Analizar la plantilla `ModularStructure.md` y proponer límites para una plataforma académica.
 
 ---
 
-## 6. Tarea desde cero
+## 8. Tarea desde cero
 
-### Enunciado
+Diseñar un monolito modular para un sistema de inventario académico:
 
-Diseñar desde cero un monolito modular para una plataforma de reservas con módulos Availability, Booking y Billing. Justificar qué límites podrían convertirse en microservicios.
+- Módulo de equipos.
+- Módulo de préstamos.
+- Módulo de usuarios.
+- Módulo de auditoría.
 
-### Requisitos mínimos
+Debe incluir:
 
-- Crear un nuevo proyecto independiente dentro de una carpeta `tarea/mi-solucion`.
-- Usar nombres claros en clases, métodos y carpetas.
-- Incluir README propio con:
-  - Problema resuelto.
-  - Diagrama Mermaid.
-  - Instrucciones de ejecución.
-  - Endpoints o ejemplos de uso.
-  - Decisiones técnicas y trade-offs.
-- Subir evidencia a GitHub.
-
-### Criterios de aceptación
-
-| Criterio | Esperado |
-|---|---|
-| Funcionalidad | La solución ejecuta y demuestra el flujo principal. |
-| Diseño | Hay separación clara de responsabilidades. |
-| Código | Métodos pequeños, nombres claros y validaciones básicas. |
-| Documentación | README comprensible para otro desarrollador. |
-| Evidencia | Incluye comandos, capturas o ejemplos JSON. |
+- Diagrama Mermaid.
+- Esquemas SQL propuestos.
+- Reglas de dependencia.
+- ADR justificando por qué no se usan microservicios todavía.
 
 ---
 
-## 7. Rúbrica sugerida
+## 9. Recursos adicionales
 
-| Nivel | Descripción |
-|---|---|
-| Excelente | Implementa el flujo completo, justifica decisiones, documenta trade-offs y mantiene código limpio. |
-| Bueno | Implementa el flujo principal con estructura clara y documentación suficiente. |
-| En proceso | Funciona parcialmente, pero mezcla responsabilidades o tiene documentación incompleta. |
-| Insuficiente | No ejecuta, no documenta o no evidencia comprensión del tema. |
+- Microsoft .NET Microservices Architecture Guide.
+- Martin Fowler — Microservices.
+- Sam Newman — Building Microservices.
+- Simon Brown — Software Architecture for Developers.
 
----
-
-## 8. Recursos adicionales
-
-- [Microservices architecture - .NET](https://learn.microsoft.com/dotnet/architecture/microservices/architect-microservice-container-applications/microservices-architecture)
-- [Microservices guide - .NET](https://learn.microsoft.com/dotnet/architecture/microservices/)
-- [Common web application architectures - .NET](https://learn.microsoft.com/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures)
-- [Team Topologies](https://teamtopologies.com/book)
 
 ---
 
-## 9. Cierre de clase
+## Checklist de estudio
 
-Preguntas de reflexión:
-
-1. ¿Qué decisión técnica tomada hoy reduce mantenimiento futuro?
-2. ¿Qué parte del laboratorio sería riesgosa en producción?
-3. ¿Qué métrica, prueba o evidencia usarías para demostrar que el diseño funciona?
+- [ ] Comprendí los conceptos principales.
+- [ ] Revisé los diagramas.
+- [ ] Leí las plantillas de código.
+- [ ] Puedo explicar la decisión arquitectónica.
+- [ ] Puedo implementar una variante desde cero.
+- [ ] Registré al menos una decisión en formato ADR.

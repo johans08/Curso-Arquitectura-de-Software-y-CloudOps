@@ -1,217 +1,209 @@
 # Semana 5: Comunicación asíncrona y patrones de mensajería
 
-> Módulo 1: Arquitectura de Software y Patrones  
-> Duración de clase: **1h30**  
-> Modalidad: **teoría visual + laboratorio guiado + tarea desde cero**
+## Enfoque de la semana
+
+Entender mensajería sin introducir brokers externos: Outbox Pattern con SQL Server y BackgroundService.
+
+
+## 1. Mapa de aprendizaje
+
+La comunicación asíncrona permite desacoplar acciones que no tienen que ocurrir en la misma respuesta HTTP.
+
+Ejemplo:
+
+Cuando se crea un curso, quizá también se necesita:
+
+- Notificar a instructores.
+- Crear una entrada de auditoría.
+- Actualizar un dashboard.
+- Enviar un correo.
+- Publicar un evento a otro sistema.
+
+No todo debe ejecutarse dentro del request HTTP.
 
 ---
 
-## 1. Objetivos de aprendizaje
+## 2. Explicación conceptual detallada
 
-- Comprender por qué la mensajería reduce acoplamiento temporal entre componentes.
-- Diferenciar comandos, eventos, colas, pub/sub y event bus.
-- Implementar un event bus en memoria con Channel y BackgroundService.
-- Reconocer patrones como retry, dead-letter, idempotencia y outbox.
+### 2.1 Comunicación sincrónica
+
+En comunicación sincrónica, el cliente espera la respuesta.
+
+```text
+Cliente -> API -> SQL Server -> Respuesta
+```
+
+Es simple y útil cuando la operación debe completarse inmediatamente.
+
+### 2.2 Comunicación asíncrona
+
+En comunicación asíncrona, el sistema registra una intención o evento y lo procesa después.
+
+```text
+API -> Guarda evento -> Responde
+Worker -> Procesa evento
+```
+
+Esto mejora resiliencia y reduce acoplamiento.
+
+### 2.3 Problema de consistencia
+
+Supongamos:
+
+1. Guardas el curso en SQL Server.
+2. Envías correo.
+3. Falla el correo.
+
+¿El curso debe revertirse?  
+¿El usuario debe esperar?  
+¿Debe reintentarse?
+
+Ahora supongamos:
+
+1. Envías correo.
+2. Falla el guardado del curso.
+
+Se notificó algo que no existe.
+
+### 2.4 Outbox Pattern
+
+Outbox resuelve este problema guardando el evento en la misma base y transacción que el cambio principal.
+
+```text
+Transacción:
+- Insert Course
+- Insert OutboxMessage
+Commit
+```
+
+Luego un proceso separado lee Outbox y procesa mensajes pendientes.
+
+### 2.5 Por qué usar SQL Server en este módulo
+
+En sistemas reales se pueden usar brokers como RabbitMQ, Kafka o Azure Service Bus.  
+Pero para este módulo se usa SQL Server porque:
+
+- Reduce herramientas externas.
+- Permite entender el patrón.
+- Enseña consistencia transaccional.
+- Es suficiente para aplicaciones pequeñas/medianas.
+- Prepara al estudiante para migrar luego a brokers reales.
 
 ---
 
-## 2. Agenda sugerida de la clase
-
-| Tiempo | Actividad |
-|---|---|
-| 00:00 - 00:10 | Problema: sistemas que no deben bloquearse entre sí. |
-| 00:10 - 00:35 | Teoría visual: eventos, comandos y consistencia eventual. |
-| 00:35 - 01:15 | Laboratorio: API que publica eventos y worker que los consume. |
-| 01:15 - 01:25 | Discusión: RabbitMQ, Azure Service Bus y outbox. |
-| 01:25 - 01:30 | Tarea y criterios de entrega. |
-
----
-
-## 3. Teoría resumida y didáctica
-
-### Idea central
-
-Esta semana se trabaja el tema **Comunicación asíncrona y patrones de mensajería** desde una perspectiva práctica. La meta no es memorizar definiciones, sino aprender a tomar decisiones técnicas justificadas y aplicarlas en código .NET.
-
-### Explicación visual
+## 3. Diagrama mental
 
 ```mermaid
-flowchart LR
-    A[Orders API] -->|OrderCreatedEvent| B[(Event Bus)]
-    B --> C[Email Worker]
-    B --> D[Inventory Worker]
-    B --> E[Analytics Worker]
+sequenceDiagram
+    participant API as API
+    participant DB as SQL Server
+    participant OUT as Outbox Table
+    participant BG as BackgroundService
+    participant DEST as Destino futuro
 
-    C --> F[Enviar email]
-    D --> G[Reservar stock]
-    E --> H[Actualizar métricas]
+    API->>DB: Guarda cambio de negocio
+    API->>OUT: Guarda evento en misma transacción
+    API-->>API: Responde rápido
+    BG->>OUT: Lee eventos pendientes
+    BG->>DEST: Procesa acción externa
+    BG->>OUT: Marca procesado
 ```
-
-### Mapa mental rápido
-
-```text
-Sincrónico:
-Cliente espera -> API llama A -> API llama B -> API llama C
-
-Asíncrono:
-Cliente recibe 202/201 -> API publica evento -> consumidores procesan en segundo plano
-```
-
-### Conceptos clave
-
-| Concepto | Explicación práctica | Error común |
-|---|---|---|
-| Responsabilidad | Cada componente debe tener una razón clara para cambiar. | Crear clases que validan, calculan, persisten y responden HTTP al mismo tiempo. |
-| Acoplamiento | Grado de dependencia entre partes del sistema. | Consumir clases concretas en todas partes sin contratos. |
-| Contrato | Acuerdo explícito entre componentes o sistemas. | Cambiar requests/responses sin documentarlo. |
-| Trade-off | Costo técnico aceptado por una decisión. | Elegir una tecnología sin explicar qué se gana y qué se pierde. |
 
 ---
 
-## 4. Laboratorio guiado: MessagingLab.Api con Event Bus en memoria
+## 4. Diseño de tabla Outbox
 
-### Resultado esperado
-
-Al final de la sesión, el estudiante tendrá una solución .NET funcional, documentada y lista para extender en la tarea.
-
-### Comandos base
-
-```bash
-# Desde la raíz del repositorio
-cd Modulo1/Semana5/src/MessagingLab.Api && dotnet run
+```sql
+CREATE TABLE academy.OutboxMessages
+(
+    Id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+    Type NVARCHAR(250) NOT NULL,
+    Payload NVARCHAR(MAX) NOT NULL,
+    OccurredAt DATETIMEOFFSET NOT NULL,
+    ProcessedAt DATETIMEOFFSET NULL,
+    Error NVARCHAR(MAX) NULL
+);
 ```
 
-### Paso 1: revisar la estructura
+Campos clave:
 
-```text
-src/
-└── <Proyecto .NET>
-    ├── Program.cs
-    ├── *.csproj
-    ├── Models/
-    ├── Services/
-    ├── Infrastructure/
-    └── README interno opcional
-```
-
-Puntos para explicar en clase:
-
-1. Qué responsabilidad tiene cada carpeta.
-2. Qué clases pertenecen al dominio y cuáles son infraestructura.
-3. Qué dependencias deberían apuntar hacia contratos y no hacia implementaciones.
-4. Qué partes podrían reemplazarse sin afectar toda la solución.
-
-### Paso 2: ejecutar la aplicación
-
-```bash
-cd Modulo1/Semana5/src/MessagingLab.Api && dotnet run
-```
-
-Si el proyecto es una API, abrir:
-
-```text
-http://localhost:5000
-http://localhost:5000/swagger
-```
-
-> Si el puerto cambia, revisar la consola de `dotnet run`.
-
-### Paso 3: probar los endpoints o ejecución
-
-Usar `curl`, Postman, Insomnia o el archivo `.http` incluido cuando exista.
-
-Ejemplo general:
-
-```bash
-curl http://localhost:5000/health
-```
-
-### Paso 4: identificar la decisión arquitectónica
-
-Durante la clase, el estudiante debe responder:
-
-- ¿Qué problema resuelve esta estructura?
-- ¿Qué parte del código cambiaría si aparece un nuevo requisito?
-- ¿Qué clase sería la primera en crecer peligrosamente?
-- ¿Qué prueba manual demuestra que el flujo funciona?
-
-### Paso 5: extender en vivo
-
-Agregar una pequeña mejora durante la sesión:
-
-- Nuevo endpoint.
-- Nueva regla de negocio.
-- Nueva implementación de una interfaz.
-- Nueva validación.
-- Nuevo caso de error documentado.
-
----
-
-## 5. Checklist de laboratorio
-
-- [ ] El proyecto compila.
-- [ ] El estudiante puede explicar el flujo principal.
-- [ ] Hay separación entre endpoint, lógica y persistencia.
-- [ ] Hay al menos una prueba manual documentada.
-- [ ] El README de la semana fue leído y usado durante la clase.
-- [ ] La mejora en vivo quedó registrada en Git.
-
----
-
-## 6. Tarea desde cero
-
-### Enunciado
-
-Crear desde cero un flujo de pagos donde PaymentCreated publique eventos para Email, Accounting y FraudCheck. Implementar idempotencia básica usando EventId.
-
-### Requisitos mínimos
-
-- Crear un nuevo proyecto independiente dentro de una carpeta `tarea/mi-solucion`.
-- Usar nombres claros en clases, métodos y carpetas.
-- Incluir README propio con:
-  - Problema resuelto.
-  - Diagrama Mermaid.
-  - Instrucciones de ejecución.
-  - Endpoints o ejemplos de uso.
-  - Decisiones técnicas y trade-offs.
-- Subir evidencia a GitHub.
-
-### Criterios de aceptación
-
-| Criterio | Esperado |
+| Campo | Propósito |
 |---|---|
-| Funcionalidad | La solución ejecuta y demuestra el flujo principal. |
-| Diseño | Hay separación clara de responsabilidades. |
-| Código | Métodos pequeños, nombres claros y validaciones básicas. |
-| Documentación | README comprensible para otro desarrollador. |
-| Evidencia | Incluye comandos, capturas o ejemplos JSON. |
+| Id | Identificador único del evento |
+| Type | Tipo de evento |
+| Payload | Datos serializados |
+| OccurredAt | Momento de creación |
+| ProcessedAt | Momento de procesamiento |
+| Error | Último error ocurrido |
 
 ---
 
-## 7. Rúbrica sugerida
+## 5. BackgroundService
 
-| Nivel | Descripción |
+ASP.NET Core permite crear procesos en segundo plano con `BackgroundService`.
+
+En este módulo se usa para:
+
+- Leer eventos pendientes.
+- Procesarlos.
+- Registrar errores.
+- Marcar mensajes procesados.
+
+---
+
+## 6. Riesgos y mitigaciones
+
+| Riesgo | Mitigación |
 |---|---|
-| Excelente | Implementa el flujo completo, justifica decisiones, documenta trade-offs y mantiene código limpio. |
-| Bueno | Implementa el flujo principal con estructura clara y documentación suficiente. |
-| En proceso | Funciona parcialmente, pero mezcla responsabilidades o tiene documentación incompleta. |
-| Insuficiente | No ejecuta, no documenta o no evidencia comprensión del tema. |
+| Procesar dos veces | Diseñar consumidores idempotentes |
+| Worker detenido | Procesar pendientes al reiniciar |
+| Error permanente | Registrar error y revisar manualmente |
+| Tabla muy grande | Archivado periódico |
+| Payload incompatible | Versionar eventos |
 
 ---
 
-## 8. Recursos adicionales
+## 7. Errores comunes
 
-- [RabbitMQ .NET tutorial](https://www.rabbitmq.com/tutorials/tutorial-one-dotnet)
-- [RabbitMQ .NET Client API Guide](https://www.rabbitmq.com/client-libraries/dotnet-api-guide)
-- [Event Bus con RabbitMQ en .NET microservices](https://learn.microsoft.com/dotnet/architecture/microservices/multi-container-microservice-net-applications/rabbitmq-event-bus-development-test-environment)
-- [Domain events en .NET microservices](https://learn.microsoft.com/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-events-design-implementation)
+- Enviar correos dentro de la transacción principal.
+- Borrar mensajes Outbox sin trazabilidad.
+- No registrar errores.
+- No pensar en idempotencia.
+- Usar Outbox como cola infinita sin mantenimiento.
+- Procesar eventos sin orden cuando el negocio exige orden.
 
 ---
 
-## 9. Cierre de clase
+## 8. Tarea desde cero
 
-Preguntas de reflexión:
+Crear Outbox para evento `StudentRegistered`.
 
-1. ¿Qué decisión técnica tomada hoy reduce mantenimiento futuro?
-2. ¿Qué parte del laboratorio sería riesgosa en producción?
-3. ¿Qué métrica, prueba o evidencia usarías para demostrar que el diseño funciona?
+Debe incluir:
+
+- Tabla Outbox.
+- Evento serializado.
+- BackgroundService.
+- Reintento simple.
+- Campo `Attempts`.
+- README explicando cómo se garantiza consistencia.
+
+---
+
+## 9. Recursos adicionales
+
+- Microsoft Learn — Background tasks with hosted services.
+- Enterprise Integration Patterns.
+- Transactional Outbox Pattern.
+- Microsoft Learn — SQL Server indexing.
+
+
+---
+
+## Checklist de estudio
+
+- [ ] Comprendí los conceptos principales.
+- [ ] Revisé los diagramas.
+- [ ] Leí las plantillas de código.
+- [ ] Puedo explicar la decisión arquitectónica.
+- [ ] Puedo implementar una variante desde cero.
+- [ ] Registré al menos una decisión en formato ADR.

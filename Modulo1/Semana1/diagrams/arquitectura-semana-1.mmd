@@ -1,0 +1,11 @@
+flowchart TD
+    Controller[API Endpoint / Controller]
+    Service[Application Service]
+    Domain[Domain Entity]
+    Repository[Repository / DbContext]
+    Database[(SQL Server)]
+
+    Controller --> Service
+    Service --> Domain
+    Service --> Repository
+    Repository --> Database

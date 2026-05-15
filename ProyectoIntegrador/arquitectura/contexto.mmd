@@ -1,0 +1,11 @@
+flowchart LR
+    Student[Estudiante]
+    Instructor[Instructor]
+    Admin[Administrador]
+    System[AcademyOps]
+    Sql[(SQL Server)]
+
+    Student --> System
+    Instructor --> System
+    Admin --> System
+    System --> Sql

@@ -1,0 +1,11 @@
+flowchart TB
+    Browser[Browser]
+    Blazor[Blazor Web App]
+    Api[ASP.NET Core API]
+    Sql[(SQL Server)]
+    Worker[Outbox Worker]
+
+    Browser --> Blazor
+    Blazor --> Api
+    Api --> Sql
+    Worker --> Sql

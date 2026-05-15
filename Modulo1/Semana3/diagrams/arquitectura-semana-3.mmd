@@ -1,0 +1,17 @@
+flowchart TB
+    subgraph ModularMonolith[Monolito Modular]
+        UI[Blazor]
+        API[API]
+        Catalog[Modulo Cursos]
+        Enrollment[Modulo Matriculas]
+        Billing[Modulo Pagos]
+        DB[(SQL Server compartido con esquemas)]
+    end
+
+    UI --> API
+    API --> Catalog
+    API --> Enrollment
+    API --> Billing
+    Catalog --> DB
+    Enrollment --> DB
+    Billing --> DB

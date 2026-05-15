@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant Client as Blazor / Cliente
+    participant API as ASP.NET Core API
+    participant Contract as DTO + Metadata
+    participant UseCase as Caso de uso
+    participant DB as SQL Server
+
+    Client->>API: HTTP Request
+    API->>Contract: Valida contrato
+    API->>UseCase: Ejecuta caso de uso
+    UseCase->>DB: Consulta o persiste
+    DB-->>UseCase: Resultado
+    UseCase-->>API: Resultado de aplicación
+    API-->>Client: HTTP Response documentada

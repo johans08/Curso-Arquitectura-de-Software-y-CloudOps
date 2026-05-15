@@ -1,226 +1,258 @@
 # Semana 1: Principios SOLID y Clean Code aplicados a entornos web
 
-> Módulo 1: Arquitectura de Software y Patrones  
-> Duración de clase: **1h30**  
-> Modalidad: **teoría visual + laboratorio guiado + tarea desde cero**
+## Enfoque de la semana
+
+Diseñar código backend mantenible en ASP.NET Core evitando controladores gigantes, servicios acoplados y modelos anémicos.
+
+
+## 1. Mapa de aprendizaje
+
+Esta semana introduce la base de todo el módulo: escribir software que pueda crecer sin volverse inmanejable.
+
+El estudiante debe comprender que SOLID no es teoría aislada de orientación a objetos. En una aplicación web real, SOLID aparece cuando se decide:
+
+- Qué debe ir en un endpoint.
+- Qué debe ir en un servicio de aplicación.
+- Qué reglas debe proteger una entidad.
+- Qué detalles deben quedar en infraestructura.
+- Qué dependencias deben ser interfaces.
+- Qué partes del sistema deben poder cambiar sin afectar todo lo demás.
 
 ---
 
-## 1. Objetivos de aprendizaje
+## 2. Explicación conceptual detallada
 
-- Reconocer señales de código frágil: alto acoplamiento, métodos largos y responsabilidades mezcladas.
-- Aplicar SRP, OCP, DIP e inyección de dependencias en una API .NET.
-- Refactorizar una lógica de negocio simple hacia servicios, contratos y modelos claros.
-- Preparar una entrega con evidencia técnica y criterios de limpieza de código.
+### 2.1 Clean Code en aplicaciones web
+
+Clean Code significa que el código puede ser leído, entendido y modificado por otro desarrollador sin tener que reconstruir mentalmente todo el sistema.
+
+En una API ASP.NET Core, el código deja de ser limpio cuando:
+
+- El endpoint valida, calcula, consulta, transforma y guarda todo en el mismo método.
+- El controlador conoce demasiados detalles de SQL Server.
+- Los DTOs se usan como entidades de dominio.
+- Las entidades solo tienen propiedades públicas y ninguna regla.
+- Los servicios tienen nombres genéricos como `Manager`, `Helper` o `Processor`.
+- Los métodos devuelven `null` sin explicar el error.
+- Las excepciones se usan para flujos normales de negocio.
+
+Un diseño limpio separa responsabilidades.
+
+### 2.2 SOLID aplicado a .NET
+
+#### Single Responsibility Principle
+
+Una clase debe tener una razón principal para cambiar.
+
+Ejemplo incorrecto:
+
+```csharp
+public class CourseController
+{
+    // Valida request
+    // Calcula reglas
+    // Abre conexión SQL
+    // Envía correo
+    // Genera token
+}
+```
+
+Tiene demasiadas razones para cambiar: contrato HTTP, reglas de negocio, persistencia, notificaciones y seguridad.
+
+Ejemplo correcto:
+
+- `CourseEndpoints`: contrato HTTP.
+- `CreateCourseUseCase`: caso de uso.
+- `Course`: reglas del curso.
+- `AcademyDbContext`: persistencia.
+- `NotificationService`: comunicación externa.
+
+#### Open/Closed Principle
+
+El sistema debe permitir agregar comportamiento sin modificar código estable.
+
+Ejemplo: si hoy se notifica por correo y mañana por SignalR, no se debe modificar todo el caso de uso. Se define una abstracción:
+
+```csharp
+public interface INotificationChannel
+{
+    Task SendAsync(Notification notification);
+}
+```
+
+Luego se agregan implementaciones sin cambiar el caso de uso.
+
+#### Liskov Substitution Principle
+
+Una implementación debe poder reemplazar a otra sin romper expectativas.
+
+Si `INotificationChannel` promete enviar notificaciones, una implementación no debería lanzar `NotSupportedException` para casos normales.
+
+#### Interface Segregation Principle
+
+No obligues a una clase a implementar métodos que no usa.
+
+Mejor:
+
+```csharp
+public interface IReadCourses
+{
+    Task<Course?> GetByIdAsync(Guid id);
+}
+
+public interface IWriteCourses
+{
+    Task AddAsync(Course course);
+}
+```
+
+Peor:
+
+```csharp
+public interface ICourseRepository
+{
+    Task AddAsync(Course course);
+    Task DeleteAsync(Guid id);
+    Task ExportToExcelAsync();
+    Task SendEmailAsync();
+}
+```
+
+#### Dependency Inversion Principle
+
+Las capas de alto nivel no deben depender de detalles de bajo nivel.  
+El caso de uso no debería depender de `SmtpClient`, `SqlConnection` o un API externo específico.
+
+Debe depender de abstracciones.
 
 ---
 
-## 2. Agenda sugerida de la clase
-
-| Tiempo | Actividad |
-|---|---|
-| 00:00 - 00:10 | Contexto: por qué Clean Code impacta costo, soporte y evolución. |
-| 00:10 - 00:30 | Teoría visual: SOLID aplicado a APIs web. |
-| 00:30 - 01:15 | Laboratorio guiado: API de inventario con responsabilidades separadas. |
-| 01:15 - 01:25 | Pruebas con HTTP requests y revisión de código. |
-| 01:25 - 01:30 | Asignación de tarea y criterios de entrega. |
-
----
-
-## 3. Teoría resumida y didáctica
-
-### Idea central
-
-Esta semana se trabaja el tema **Principios SOLID y Clean Code aplicados a entornos web** desde una perspectiva práctica. La meta no es memorizar definiciones, sino aprender a tomar decisiones técnicas justificadas y aplicarlas en código .NET.
-
-### Explicación visual
+## 3. Diagrama mental
 
 ```mermaid
-flowchart LR
-    A[HTTP Request] --> B[Endpoint Minimal API]
-    B --> C[IProductService]
-    C --> D[IProductRepository]
-    C --> E[IPricingPolicy]
-    D --> F[(InMemory Store)]
-    E --> G[Reglas de precio]
+flowchart TD
+    Controller[API Endpoint / Controller]
+    Service[Application Service]
+    Domain[Domain Entity]
+    Repository[Repository / DbContext]
+    Database[(SQL Server)]
 
-    classDef api fill:#eef,stroke:#333,stroke-width:1px;
-    classDef domain fill:#efe,stroke:#333,stroke-width:1px;
-    class B api;
-    class C,D,E domain;
+    Controller --> Service
+    Service --> Domain
+    Service --> Repository
+    Repository --> Database
 ```
-
-### Mapa mental rápido
-
-```text
-Mala señal:
-
-Endpoint -> valida -> calcula precio -> guarda -> arma respuesta -> escribe logs
-
-Mejor separación:
-
-Endpoint -> Servicio de aplicación -> Política de precio -> Repositorio
-                     |                    |
-                     v                    v
-                 Casos de uso          Reglas aisladas
-```
-
-### Conceptos clave
-
-| Concepto | Explicación práctica | Error común |
-|---|---|---|
-| Responsabilidad | Cada componente debe tener una razón clara para cambiar. | Crear clases que validan, calculan, persisten y responden HTTP al mismo tiempo. |
-| Acoplamiento | Grado de dependencia entre partes del sistema. | Consumir clases concretas en todas partes sin contratos. |
-| Contrato | Acuerdo explícito entre componentes o sistemas. | Cambiar requests/responses sin documentarlo. |
-| Trade-off | Costo técnico aceptado por una decisión. | Elegir una tecnología sin explicar qué se gana y qué se pierde. |
 
 ---
 
-## 4. Laboratorio guiado: Inventory.Api con Clean Code y SOLID
+## 4. Aplicación en .NET + SQL Server
 
-### Resultado esperado
+En este módulo, Clean Code se aplica con las siguientes reglas:
 
-Al final de la sesión, el estudiante tendrá una solución .NET funcional, documentada y lista para extender en la tarea.
-
-### Comandos base
-
-```bash
-# Desde la raíz del repositorio
-cd Modulo1/Semana1/src/Inventory.Api && dotnet run
-```
-
-### Paso 1: revisar la estructura
-
-```text
-src/
-└── <Proyecto .NET>
-    ├── Program.cs
-    ├── *.csproj
-    ├── Models/
-    ├── Services/
-    ├── Infrastructure/
-    └── README interno opcional
-```
-
-Puntos para explicar en clase:
-
-1. Qué responsabilidad tiene cada carpeta.
-2. Qué clases pertenecen al dominio y cuáles son infraestructura.
-3. Qué dependencias deberían apuntar hacia contratos y no hacia implementaciones.
-4. Qué partes podrían reemplazarse sin afectar toda la solución.
-
-### Paso 2: ejecutar la aplicación
-
-```bash
-cd Modulo1/Semana1/src/Inventory.Api && dotnet run
-```
-
-Si el proyecto es una API, abrir:
-
-```text
-http://localhost:5000
-http://localhost:5000/swagger
-```
-
-> Si el puerto cambia, revisar la consola de `dotnet run`.
-
-### Paso 3: probar los endpoints o ejecución
-
-Usar `curl`, Postman, Insomnia o el archivo `.http` incluido cuando exista.
-
-Ejemplo general:
-
-```bash
-curl http://localhost:5000/health
-```
-
-### Paso 4: identificar la decisión arquitectónica
-
-Durante la clase, el estudiante debe responder:
-
-- ¿Qué problema resuelve esta estructura?
-- ¿Qué parte del código cambiaría si aparece un nuevo requisito?
-- ¿Qué clase sería la primera en crecer peligrosamente?
-- ¿Qué prueba manual demuestra que el flujo funciona?
-
-### Paso 5: extender en vivo
-
-Agregar una pequeña mejora durante la sesión:
-
-- Nuevo endpoint.
-- Nueva regla de negocio.
-- Nueva implementación de una interfaz.
-- Nueva validación.
-- Nuevo caso de error documentado.
-
----
-
-## 5. Checklist de laboratorio
-
-- [ ] El proyecto compila.
-- [ ] El estudiante puede explicar el flujo principal.
-- [ ] Hay separación entre endpoint, lógica y persistencia.
-- [ ] Hay al menos una prueba manual documentada.
-- [ ] El README de la semana fue leído y usado durante la clase.
-- [ ] La mejora en vivo quedó registrada en Git.
-
----
-
-## 6. Tarea desde cero
-
-### Enunciado
-
-Crear desde cero una API de gestión de cursos con entidades Course, Instructor y Enrollment. Aplicar SRP, DIP e interfaces para separar validación, repositorio y reglas de cupo.
-
-### Requisitos mínimos
-
-- Crear un nuevo proyecto independiente dentro de una carpeta `tarea/mi-solucion`.
-- Usar nombres claros en clases, métodos y carpetas.
-- Incluir README propio con:
-  - Problema resuelto.
-  - Diagrama Mermaid.
-  - Instrucciones de ejecución.
-  - Endpoints o ejemplos de uso.
-  - Decisiones técnicas y trade-offs.
-- Subir evidencia a GitHub.
-
-### Criterios de aceptación
-
-| Criterio | Esperado |
+| Elemento | Regla |
 |---|---|
-| Funcionalidad | La solución ejecuta y demuestra el flujo principal. |
-| Diseño | Hay separación clara de responsabilidades. |
-| Código | Métodos pequeños, nombres claros y validaciones básicas. |
-| Documentación | README comprensible para otro desarrollador. |
-| Evidencia | Incluye comandos, capturas o ejemplos JSON. |
+| Endpoint | Solo recibe, autentica, valida contrato y delega |
+| Application Service | Orquesta el caso de uso |
+| Entidad | Protege invariantes |
+| DbContext | Representa persistencia |
+| SQL Server | Protege integridad |
+| DTO | No contiene reglas de negocio |
 
 ---
 
-## 7. Rúbrica sugerida
+## 5. Ejemplo de problema real
 
-| Nivel | Descripción |
-|---|---|
-| Excelente | Implementa el flujo completo, justifica decisiones, documenta trade-offs y mantiene código limpio. |
-| Bueno | Implementa el flujo principal con estructura clara y documentación suficiente. |
-| En proceso | Funciona parcialmente, pero mezcla responsabilidades o tiene documentación incompleta. |
-| Insuficiente | No ejecuta, no documenta o no evidencia comprensión del tema. |
+Una plataforma académica necesita crear cursos.  
+Una mala implementación permitiría:
+
+- Crear cursos sin código.
+- Repetir códigos.
+- Publicar cursos incompletos.
+- Guardar datos inconsistentes.
+- Devolver errores improvisados.
+- Enviar notificaciones dentro del controlador.
+
+Una implementación profesional separa:
+
+1. Validación de contrato.
+2. Regla de negocio.
+3. Persistencia.
+4. Evento de dominio.
+5. Notificación asíncrona.
 
 ---
 
-## 8. Recursos adicionales
+## 6. Errores comunes
 
-- [Dependency Injection en .NET](https://learn.microsoft.com/dotnet/core/extensions/dependency-injection/overview)
-- [Dependency Injection en ASP.NET Core](https://learn.microsoft.com/aspnet/core/fundamentals/dependency-injection)
-- [Architectural principles - .NET](https://learn.microsoft.com/dotnet/architecture/modern-web-apps-azure/architectural-principles)
-- [Clean Architecture en aplicaciones web .NET](https://learn.microsoft.com/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures)
-- [Libro: Clean Code - Robert C. Martin](https://www.oreilly.com/library/view/clean-code-a/9780136083238/)
+- Creer que SOLID significa crear muchas carpetas.
+- Usar interfaces para todo sin necesidad.
+- Confundir DTO con entidad.
+- Hacer que EF Core determine todo el diseño.
+- Poner lógica de negocio en Razor Components.
+- Crear servicios gigantes con 20 métodos.
+- Nombrar clases por tecnología y no por intención.
 
 ---
 
-## 9. Cierre de clase
+## 7. Práctica de refuerzo
 
-Preguntas de reflexión:
+Analizar las plantillas en `templates/`:
 
-1. ¿Qué decisión técnica tomada hoy reduce mantenimiento futuro?
-2. ¿Qué parte del laboratorio sería riesgosa en producción?
-3. ¿Qué métrica, prueba o evidencia usarías para demostrar que el diseño funciona?
+- `Before_CourseService.cs`
+- `After_CourseEntity.cs`
+- `After_CreateCourseUseCase.cs`
+
+El objetivo es comparar una implementación acoplada contra una implementación separada por responsabilidades.
+
+---
+
+## 8. Tarea desde cero
+
+Construir un pequeño módulo de estudiantes con:
+
+- Entidad `Student`.
+- Endpoint para crear estudiante.
+- Validación de email.
+- Restricción de email único en SQL Server.
+- Servicio de aplicación `CreateStudentUseCase`.
+- README explicando qué principio SOLID se aplicó en cada clase.
+
+### Entregables
+
+```text
+entregas/semana-1/
+├── README.md
+├── src/
+├── database/
+└── diagrams/
+```
+
+### Preguntas obligatorias
+
+1. ¿Qué responsabilidad tiene cada clase?
+2. ¿Dónde está la regla de negocio más importante?
+3. ¿Qué pasaría si mañana cambia SQL Server?
+4. ¿Qué pasaría si mañana cambia el contrato HTTP?
+5. ¿Qué parte del sistema quedó más fácil de probar?
+
+---
+
+## 9. Recursos adicionales
+
+- Microsoft Learn — ASP.NET Core.
+- Microsoft Learn — Entity Framework Core.
+- Microsoft Learn — SQL Server LocalDB.
+- Robert C. Martin — Clean Code.
+- Robert C. Martin — Agile Software Development, Principles, Patterns, and Practices.
+
+
+---
+
+## Checklist de estudio
+
+- [ ] Comprendí los conceptos principales.
+- [ ] Revisé los diagramas.
+- [ ] Leí las plantillas de código.
+- [ ] Puedo explicar la decisión arquitectónica.
+- [ ] Puedo implementar una variante desde cero.
+- [ ] Registré al menos una decisión en formato ADR.

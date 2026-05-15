@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant API as API
+    participant DB as SQL Server
+    participant OUT as Outbox Table
+    participant BG as BackgroundService
+    participant DEST as Destino futuro
+
+    API->>DB: Guarda cambio de negocio
+    API->>OUT: Guarda evento en misma transacción
+    API-->>API: Responde rápido
+    BG->>OUT: Lee eventos pendientes
+    BG->>DEST: Procesa acción externa
+    BG->>OUT: Marca procesado

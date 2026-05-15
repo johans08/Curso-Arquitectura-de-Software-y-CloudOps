@@ -1,228 +1,249 @@
 # Semana 6: Estrategias de bases de datos: SQL vs NoSQL
 
-> Módulo 1: Arquitectura de Software y Patrones  
-> Duración de clase: **1h30**  
-> Modalidad: **teoría visual + laboratorio guiado + tarea desde cero**
+## Enfoque de la semana
+
+Comprender cómo decidir entre modelos relacionales y documentales sin abandonar SQL Server en la práctica principal.
+
+
+## 1. Mapa de aprendizaje
+
+Esta semana enseña a tomar decisiones de datos.  
+No se trata de defender SQL o NoSQL como religión técnica.
+
+Se trata de responder:
+
+- ¿Qué forma tienen mis datos?
+- ¿Qué consultas necesito?
+- ¿Qué consistencia requiere el negocio?
+- ¿Qué relaciones son críticas?
+- ¿Qué tan flexible debe ser el esquema?
+- ¿Qué equipo dará soporte a la solución?
 
 ---
 
-## 1. Objetivos de aprendizaje
+## 2. Explicación conceptual detallada
 
-- Comparar modelos relacionales y documentales con criterios de consulta, consistencia y evolución.
-- Implementar persistencia SQL con EF Core y SQLite.
-- Crear un repositorio documental simple basado en JSON para simular enfoque NoSQL.
-- Tomar decisiones de arquitectura de datos con trade-offs claros.
+### 2.1 Modelo relacional
 
----
+El modelo relacional organiza datos en tablas, filas, columnas y relaciones.
 
-## 2. Agenda sugerida de la clase
+Es fuerte cuando necesitas:
 
-| Tiempo | Actividad |
+- Integridad referencial.
+- Transacciones.
+- Consultas complejas.
+- Reportes.
+- Consistencia fuerte.
+- Relaciones muchas-a-muchas.
+- Constraints.
+- Normalización.
+
+Ejemplo académico:
+
+- Student.
+- Course.
+- Enrollment.
+- Assignment.
+- Grade.
+
+Estas entidades tienen relaciones claras.
+
+### 2.2 Modelo NoSQL
+
+NoSQL agrupa varias familias:
+
+| Familia | Ejemplo conceptual |
 |---|---|
-| 00:00 - 00:10 | Contexto: elegir base de datos por acceso a datos, no por moda. |
-| 00:10 - 00:35 | Teoría visual: entidades, agregados y documentos. |
-| 00:35 - 01:15 | Laboratorio: API con SQL para productos y documentos para perfiles. |
-| 01:15 - 01:25 | Discusión: consistencia, transacciones y reportes. |
-| 01:25 - 01:30 | Tarea y criterios de diseño de datos. |
+| Documental | Documentos JSON |
+| Key-value | Cache o configuración |
+| Columnar | Analítica a gran escala |
+| Grafo | Relaciones altamente conectadas |
+
+NoSQL no significa “sin estructura”. Significa que no usa necesariamente el modelo relacional tradicional.
+
+### 2.3 Documentos JSON
+
+Un documento puede representar una estructura completa:
+
+```json
+{
+  "studentId": "123",
+  "name": "Ana",
+  "preferences": {
+    "language": "es",
+    "notifications": true
+  }
+}
+```
+
+Esto es flexible, pero puede complicar:
+
+- Validaciones.
+- Reportes.
+- Integridad entre documentos.
+- Consultas relacionales.
+- Actualizaciones parciales.
+- Migraciones de estructura.
+
+### 2.4 SQL Server y JSON
+
+SQL Server permite almacenar y consultar JSON.  
+Esto no convierte SQL Server en MongoDB, pero permite practicar escenarios híbridos.
+
+Ejemplo:
+
+```sql
+CREATE TABLE academy.StudentProfiles
+(
+    StudentId UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+    ProfileJson NVARCHAR(MAX) NOT NULL,
+    CONSTRAINT CK_StudentProfiles_IsJson CHECK (ISJSON(ProfileJson) = 1)
+);
+```
+
+Ventaja: se mantiene SQL Server como única herramienta.  
+Limitación: no reemplaza un motor documental real cuando el caso exige escalabilidad o patrones NoSQL avanzados.
 
 ---
 
-## 3. Teoría resumida y didáctica
-
-### Idea central
-
-Esta semana se trabaja el tema **Estrategias de bases de datos: SQL vs NoSQL** desde una perspectiva práctica. La meta no es memorizar definiciones, sino aprender a tomar decisiones técnicas justificadas y aplicarlas en código .NET.
-
-### Explicación visual
+## 3. Diagrama mental
 
 ```mermaid
-flowchart TB
-    subgraph SQL[Modelo SQL]
-      A[Products] --> B[Categories]
-      A --> C[Prices]
-    end
+flowchart LR
+    Requirement[Requisito de negocio]
+    Shape[Forma de los datos]
+    Query[Patrones de consulta]
+    Consistency[Consistencia]
+    Storage[Modelo de almacenamiento]
 
-    subgraph NoSQL[Modelo documental]
-      D[UserProfile Document]
-      D --> E[Preferences embebidas]
-      D --> F[Addresses embebidas]
-    end
+    Requirement --> Shape
+    Shape --> Query
+    Query --> Consistency
+    Consistency --> Storage
 
-    G[API] --> SQL
-    G --> NoSQL
+    Storage --> SQL[(SQL Server Relacional)]
+    Storage --> JSON[(SQL Server JSON Document Style)]
+    Storage --> NoSQL[(NoSQL real opcional)]
 ```
 
-### Mapa mental rápido
+---
 
-```text
-SQL favorece:
-- Relaciones fuertes
-- Transacciones
-- Integridad referencial
-- Consultas analíticas estructuradas
+## 4. Comparación práctica
 
-NoSQL favorece:
-- Lecturas por agregado
-- Esquema flexible
-- Escalabilidad horizontal
-- Datos semi-estructurados
-```
-
-### Conceptos clave
-
-| Concepto | Explicación práctica | Error común |
+| Criterio | SQL Server relacional | Documento JSON |
 |---|---|---|
-| Responsabilidad | Cada componente debe tener una razón clara para cambiar. | Crear clases que validan, calculan, persisten y responden HTTP al mismo tiempo. |
-| Acoplamiento | Grado de dependencia entre partes del sistema. | Consumir clases concretas en todas partes sin contratos. |
-| Contrato | Acuerdo explícito entre componentes o sistemas. | Cambiar requests/responses sin documentarlo. |
-| Trade-off | Costo técnico aceptado por una decisión. | Elegir una tecnología sin explicar qué se gana y qué se pierde. |
+| Integridad referencial | Excelente | Limitada |
+| Flexibilidad de estructura | Media | Alta |
+| Reportes | Excelente | Más complejo |
+| Transacciones | Excelente | Depende del motor |
+| Cambios frecuentes de campos | Requiere migraciones | Más flexible |
+| Consultas por relaciones | Natural | Más difícil |
+| Auditoría | Muy buena | Depende del diseño |
 
 ---
 
-## 4. Laboratorio guiado: DataStrategyLab.Api con EF Core SQLite y documentos JSON
+## 5. Cuándo elegir SQL Server
 
-### Resultado esperado
+Elige SQL Server cuando:
 
-Al final de la sesión, el estudiante tendrá una solución .NET funcional, documentada y lista para extender en la tarea.
+- Los datos tienen relaciones importantes.
+- La consistencia es crítica.
+- Hay reportes transaccionales.
+- El equipo conoce SQL.
+- Se requiere trazabilidad.
+- Existen reglas de integridad fuertes.
 
-### Comandos base
+### Ejemplo
 
-```bash
-# Desde la raíz del repositorio
-cd Modulo1/Semana6/src/DataStrategyLab.Api && dotnet run
-```
+Matrículas académicas:
 
-### Paso 1: revisar la estructura
+- Un estudiante existe.
+- Un curso existe.
+- Una matrícula une ambos.
+- No se debe matricular dos veces el mismo estudiante en el mismo curso.
+- Debe existir una fecha.
+- Debe existir estado.
 
-```text
-src/
-└── <Proyecto .NET>
-    ├── Program.cs
-    ├── *.csproj
-    ├── Models/
-    ├── Services/
-    ├── Infrastructure/
-    └── README interno opcional
-```
-
-Puntos para explicar en clase:
-
-1. Qué responsabilidad tiene cada carpeta.
-2. Qué clases pertenecen al dominio y cuáles son infraestructura.
-3. Qué dependencias deberían apuntar hacia contratos y no hacia implementaciones.
-4. Qué partes podrían reemplazarse sin afectar toda la solución.
-
-### Paso 2: ejecutar la aplicación
-
-```bash
-cd Modulo1/Semana6/src/DataStrategyLab.Api && dotnet run
-```
-
-Si el proyecto es una API, abrir:
-
-```text
-http://localhost:5000
-http://localhost:5000/swagger
-```
-
-> Si el puerto cambia, revisar la consola de `dotnet run`.
-
-### Paso 3: probar los endpoints o ejecución
-
-Usar `curl`, Postman, Insomnia o el archivo `.http` incluido cuando exista.
-
-Ejemplo general:
-
-```bash
-curl http://localhost:5000/health
-```
-
-### Paso 4: identificar la decisión arquitectónica
-
-Durante la clase, el estudiante debe responder:
-
-- ¿Qué problema resuelve esta estructura?
-- ¿Qué parte del código cambiaría si aparece un nuevo requisito?
-- ¿Qué clase sería la primera en crecer peligrosamente?
-- ¿Qué prueba manual demuestra que el flujo funciona?
-
-### Paso 5: extender en vivo
-
-Agregar una pequeña mejora durante la sesión:
-
-- Nuevo endpoint.
-- Nueva regla de negocio.
-- Nueva implementación de una interfaz.
-- Nueva validación.
-- Nuevo caso de error documentado.
+Esto es naturalmente relacional.
 
 ---
 
-## 5. Checklist de laboratorio
+## 6. Cuándo considerar NoSQL
 
-- [ ] El proyecto compila.
-- [ ] El estudiante puede explicar el flujo principal.
-- [ ] Hay separación entre endpoint, lógica y persistencia.
-- [ ] Hay al menos una prueba manual documentada.
-- [ ] El README de la semana fue leído y usado durante la clase.
-- [ ] La mejora en vivo quedó registrada en Git.
+Considera NoSQL cuando:
 
----
+- El documento se lee y escribe como unidad.
+- El esquema cambia frecuentemente.
+- La estructura interna varía mucho por caso.
+- No hay muchas relaciones fuertes.
+- Se requiere escalabilidad específica.
+- El caso se ajusta a una familia NoSQL clara.
 
-## 6. Tarea desde cero
+### Ejemplo
 
-### Enunciado
-
-Crear desde cero una API de catálogo con productos en SQL y preferencias de usuario en documento JSON/Mongo/Cosmos. Justificar la elección de cada modelo.
-
-### Requisitos mínimos
-
-- Crear un nuevo proyecto independiente dentro de una carpeta `tarea/mi-solucion`.
-- Usar nombres claros en clases, métodos y carpetas.
-- Incluir README propio con:
-  - Problema resuelto.
-  - Diagrama Mermaid.
-  - Instrucciones de ejecución.
-  - Endpoints o ejemplos de uso.
-  - Decisiones técnicas y trade-offs.
-- Subir evidencia a GitHub.
-
-### Criterios de aceptación
-
-| Criterio | Esperado |
-|---|---|
-| Funcionalidad | La solución ejecuta y demuestra el flujo principal. |
-| Diseño | Hay separación clara de responsabilidades. |
-| Código | Métodos pequeños, nombres claros y validaciones básicas. |
-| Documentación | README comprensible para otro desarrollador. |
-| Evidencia | Incluye comandos, capturas o ejemplos JSON. |
+Preferencias de usuario, configuración dinámica, formularios altamente variables.
 
 ---
 
-## 7. Rúbrica sugerida
+## 7. Práctica de refuerzo
 
-| Nivel | Descripción |
-|---|---|
-| Excelente | Implementa el flujo completo, justifica decisiones, documenta trade-offs y mantiene código limpio. |
-| Bueno | Implementa el flujo principal con estructura clara y documentación suficiente. |
-| En proceso | Funciona parcialmente, pero mezcla responsabilidades o tiene documentación incompleta. |
-| Insuficiente | No ejecuta, no documenta o no evidencia comprensión del tema. |
+El módulo principal usa SQL Server y una tabla JSON para simular un escenario documental sin instalar otra base.
 
----
+Archivos:
 
-## 8. Recursos adicionales
-
-- [Entity Framework Core documentation](https://learn.microsoft.com/ef/core/)
-- [SQLite EF Core Provider](https://learn.microsoft.com/ef/core/providers/sqlite/)
-- [Getting Started with EF Core](https://learn.microsoft.com/ef/core/get-started/overview/first-app)
-- [Azure Architecture: data considerations](https://learn.microsoft.com/azure/architecture/guide/technology-choices/data-store-overview)
+- `RelationalModel.sql`
+- `JsonDocumentStyle.sql`
+- `DecisionMatrix.md`
 
 ---
 
-## 9. Cierre de clase
+## 8. Tarea desde cero
 
-Preguntas de reflexión:
+Diseñar dos modelos para perfiles de estudiante:
 
-1. ¿Qué decisión técnica tomada hoy reduce mantenimiento futuro?
-2. ¿Qué parte del laboratorio sería riesgosa en producción?
-3. ¿Qué métrica, prueba o evidencia usarías para demostrar que el diseño funciona?
+1. Modelo relacional.
+2. Modelo con JSON en SQL Server.
+
+Debe entregar:
+
+- Scripts SQL.
+- Diagrama.
+- Comparación.
+- Decisión justificada.
+- Riesgos de cada alternativa.
+
+---
+
+## 9. Sección opcional: NoSQL real
+
+Si el instructor desea mostrar una base NoSQL real, puede hacerlo como demostración aislada.  
+No debe convertirse en dependencia del proyecto integrador.
+
+Opciones posibles:
+
+- MongoDB local.
+- Azure Cosmos DB Emulator.
+- LiteDB como archivo local .NET.
+
+La entrega principal del módulo debe seguir usando SQL Server.
+
+---
+
+## 10. Recursos adicionales
+
+- Microsoft Learn — SQL Server JSON.
+- Microsoft Learn — EF Core SQL Server provider.
+- Designing Data-Intensive Applications.
+- Microsoft Learn — Azure Cosmos DB conceptual documentation.
+
+
+---
+
+## Checklist de estudio
+
+- [ ] Comprendí los conceptos principales.
+- [ ] Revisé los diagramas.
+- [ ] Leí las plantillas de código.
+- [ ] Puedo explicar la decisión arquitectónica.
+- [ ] Puedo implementar una variante desde cero.
+- [ ] Registré al menos una decisión en formato ADR.

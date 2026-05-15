@@ -1,219 +1,236 @@
 # Semana 4: Diseño y documentación de APIs profesionales con Swagger/OpenAPI
 
-> Módulo 1: Arquitectura de Software y Patrones  
-> Duración de clase: **1h30**  
-> Modalidad: **teoría visual + laboratorio guiado + tarea desde cero**
+## Enfoque de la semana
+
+Diseñar APIs mantenibles con contratos claros, errores consistentes, versionamiento conceptual y documentación útil.
+
+
+## 1. Mapa de aprendizaje
+
+Una API profesional no es solo un conjunto de endpoints que devuelven JSON.
+
+Una API profesional tiene:
+
+- Contratos explícitos.
+- Nombres consistentes.
+- Códigos HTTP correctos.
+- Errores estandarizados.
+- Seguridad declarada.
+- Documentación OpenAPI.
+- Versionamiento planificado.
+- Separación entre DTO y entidad.
+- Ejemplos claros para consumidores.
 
 ---
 
-## 1. Objetivos de aprendizaje
+## 2. Explicación conceptual detallada
 
-- Diseñar endpoints REST consistentes, versionables y documentados.
-- Configurar Swagger/OpenAPI en ASP.NET Core.
-- Definir contratos DTO, códigos de respuesta y ejemplos de error.
-- Crear una guía de consumo de API para otros equipos.
+### 2.1 API como contrato
 
----
+Cuando expones una API, estás publicando un contrato.  
+Otros sistemas, frontends o equipos dependerán de ese contrato.
 
-## 2. Agenda sugerida de la clase
+Cambiar una propiedad, eliminar un campo o modificar un código de respuesta puede romper consumidores.
 
-| Tiempo | Actividad |
+Por eso una API se diseña, no se improvisa.
+
+### 2.2 DTOs
+
+Un DTO representa lo que viaja por HTTP.  
+No debe confundirse con la entidad de dominio.
+
+Entidad:
+
+```csharp
+public class Course
+{
+    public Guid Id { get; private set; }
+    public string Code { get; private set; }
+    public string Status { get; private set; }
+
+    public void Publish() { ... }
+}
+```
+
+DTO:
+
+```csharp
+public record CourseResponse(Guid Id, string Code, string Name, string Status);
+```
+
+El DTO no protege reglas de negocio. Solo transporta datos.
+
+### 2.3 Códigos HTTP
+
+| Código | Uso |
 |---|---|
-| 00:00 - 00:10 | Buenas y malas APIs: contrato antes que implementación. |
-| 00:10 - 00:30 | Teoría visual: recurso, método, estado y contrato. |
-| 00:30 - 01:15 | Laboratorio: API profesional con Swagger, DTOs y errores. |
-| 01:15 - 01:25 | Pruebas desde Swagger UI y REST Client. |
-| 01:25 - 01:30 | Tarea y checklist de diseño API. |
+| 200 OK | Consulta exitosa |
+| 201 Created | Recurso creado |
+| 204 No Content | Operación exitosa sin cuerpo |
+| 400 Bad Request | Request inválido |
+| 401 Unauthorized | No autenticado |
+| 403 Forbidden | Autenticado sin permisos |
+| 404 Not Found | Recurso no existe |
+| 409 Conflict | Conflicto de negocio |
+| 500 Internal Server Error | Error inesperado |
+
+### 2.4 Errores consistentes
+
+Un error profesional debe responder:
+
+- Qué pasó.
+- Qué código interno lo identifica.
+- Qué puede hacer el consumidor.
+- Qué trazabilidad existe.
+
+Ejemplo:
+
+```json
+{
+  "code": "course_code_already_exists",
+  "message": "Ya existe un curso con ese código.",
+  "traceId": "00-abc..."
+}
+```
+
+### 2.5 OpenAPI y Swagger
+
+OpenAPI describe la API de forma estándar.  
+Swagger UI permite explorarla visualmente.
+
+La documentación debe ayudar a consumir la API. No debe ser solo un JSON generado automáticamente.
+
+Debe incluir:
+
+- Summary.
+- Description.
+- Tags.
+- Responses.
+- Security scheme.
+- Ejemplos.
+- Contratos claros.
 
 ---
 
-## 3. Teoría resumida y didáctica
-
-### Idea central
-
-Esta semana se trabaja el tema **Diseño y documentación de APIs profesionales con Swagger/OpenAPI** desde una perspectiva práctica. La meta no es memorizar definiciones, sino aprender a tomar decisiones técnicas justificadas y aplicarlas en código .NET.
-
-### Explicación visual
+## 3. Diagrama mental
 
 ```mermaid
 sequenceDiagram
-    participant Client
-    participant API
-    participant Service
-    participant Store
+    participant Client as Blazor / Cliente
+    participant API as ASP.NET Core API
+    participant Contract as DTO + Metadata
+    participant UseCase as Caso de uso
+    participant DB as SQL Server
 
-    Client->>API: POST /api/v1/tickets
-    API->>API: Validar DTO
-    API->>Service: Crear ticket
-    Service->>Store: Guardar
-    Store-->>Service: TicketId
-    Service-->>API: Resultado
-    API-->>Client: 201 Created + Location
+    Client->>API: HTTP Request
+    API->>Contract: Valida contrato
+    API->>UseCase: Ejecuta caso de uso
+    UseCase->>DB: Consulta o persiste
+    DB-->>UseCase: Resultado
+    UseCase-->>API: Resultado de aplicación
+    API-->>Client: HTTP Response documentada
 ```
-
-### Mapa mental rápido
-
-```text
-Contrato profesional de API:
-
-Endpoint + DTO + Validación + Códigos HTTP + OpenAPI + Ejemplos + Seguridad
-```
-
-### Conceptos clave
-
-| Concepto | Explicación práctica | Error común |
-|---|---|---|
-| Responsabilidad | Cada componente debe tener una razón clara para cambiar. | Crear clases que validan, calculan, persisten y responden HTTP al mismo tiempo. |
-| Acoplamiento | Grado de dependencia entre partes del sistema. | Consumir clases concretas en todas partes sin contratos. |
-| Contrato | Acuerdo explícito entre componentes o sistemas. | Cambiar requests/responses sin documentarlo. |
-| Trade-off | Costo técnico aceptado por una decisión. | Elegir una tecnología sin explicar qué se gana y qué se pierde. |
 
 ---
 
-## 4. Laboratorio guiado: ProfessionalApi.Api con Swagger/OpenAPI
+## 4. Aplicación en .NET
 
-### Resultado esperado
+ASP.NET Core permite documentar endpoints con metadata:
 
-Al final de la sesión, el estudiante tendrá una solución .NET funcional, documentada y lista para extender en la tarea.
-
-### Comandos base
-
-```bash
-# Desde la raíz del repositorio
-cd Modulo1/Semana4/src/ProfessionalApi.Api && dotnet run
+```csharp
+app.MapPost("/api/courses", CreateCourse)
+   .WithTags("Courses")
+   .WithSummary("Crea un curso")
+   .WithDescription("Registra un nuevo curso en estado Draft.");
 ```
 
-### Paso 1: revisar la estructura
+En controladores se pueden usar atributos como:
 
-```text
-src/
-└── <Proyecto .NET>
-    ├── Program.cs
-    ├── *.csproj
-    ├── Models/
-    ├── Services/
-    ├── Infrastructure/
-    └── README interno opcional
+```csharp
+[ProducesResponseType(typeof(CourseResponse), StatusCodes.Status201Created)]
+[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
 ```
-
-Puntos para explicar en clase:
-
-1. Qué responsabilidad tiene cada carpeta.
-2. Qué clases pertenecen al dominio y cuáles son infraestructura.
-3. Qué dependencias deberían apuntar hacia contratos y no hacia implementaciones.
-4. Qué partes podrían reemplazarse sin afectar toda la solución.
-
-### Paso 2: ejecutar la aplicación
-
-```bash
-cd Modulo1/Semana4/src/ProfessionalApi.Api && dotnet run
-```
-
-Si el proyecto es una API, abrir:
-
-```text
-http://localhost:5000
-http://localhost:5000/swagger
-```
-
-> Si el puerto cambia, revisar la consola de `dotnet run`.
-
-### Paso 3: probar los endpoints o ejecución
-
-Usar `curl`, Postman, Insomnia o el archivo `.http` incluido cuando exista.
-
-Ejemplo general:
-
-```bash
-curl http://localhost:5000/health
-```
-
-### Paso 4: identificar la decisión arquitectónica
-
-Durante la clase, el estudiante debe responder:
-
-- ¿Qué problema resuelve esta estructura?
-- ¿Qué parte del código cambiaría si aparece un nuevo requisito?
-- ¿Qué clase sería la primera en crecer peligrosamente?
-- ¿Qué prueba manual demuestra que el flujo funciona?
-
-### Paso 5: extender en vivo
-
-Agregar una pequeña mejora durante la sesión:
-
-- Nuevo endpoint.
-- Nueva regla de negocio.
-- Nueva implementación de una interfaz.
-- Nueva validación.
-- Nuevo caso de error documentado.
 
 ---
 
-## 5. Checklist de laboratorio
+## 5. Buen diseño de endpoints
 
-- [ ] El proyecto compila.
-- [ ] El estudiante puede explicar el flujo principal.
-- [ ] Hay separación entre endpoint, lógica y persistencia.
-- [ ] Hay al menos una prueba manual documentada.
-- [ ] El README de la semana fue leído y usado durante la clase.
-- [ ] La mejora en vivo quedó registrada en Git.
-
----
-
-## 6. Tarea desde cero
-
-### Enunciado
-
-Crear desde cero una API de mesa de ayuda con endpoints versionados, Swagger, DTOs de request/response, códigos HTTP correctos y documentación de errores.
-
-### Requisitos mínimos
-
-- Crear un nuevo proyecto independiente dentro de una carpeta `tarea/mi-solucion`.
-- Usar nombres claros en clases, métodos y carpetas.
-- Incluir README propio con:
-  - Problema resuelto.
-  - Diagrama Mermaid.
-  - Instrucciones de ejecución.
-  - Endpoints o ejemplos de uso.
-  - Decisiones técnicas y trade-offs.
-- Subir evidencia a GitHub.
-
-### Criterios de aceptación
-
-| Criterio | Esperado |
+| Operación | Endpoint recomendado |
 |---|---|
-| Funcionalidad | La solución ejecuta y demuestra el flujo principal. |
-| Diseño | Hay separación clara de responsabilidades. |
-| Código | Métodos pequeños, nombres claros y validaciones básicas. |
-| Documentación | README comprensible para otro desarrollador. |
-| Evidencia | Incluye comandos, capturas o ejemplos JSON. |
+| Listar cursos | GET /api/courses |
+| Obtener curso | GET /api/courses/{id} |
+| Crear curso | POST /api/courses |
+| Actualizar curso | PUT /api/courses/{id} |
+| Publicar curso | POST /api/courses/{id}/publish |
+| Eliminar curso | DELETE /api/courses/{id} |
+
+Evitar:
+
+```text
+/api/createCourse
+/api/getAllCourses
+/api/course/publishCourseNow
+```
 
 ---
 
-## 7. Rúbrica sugerida
+## 6. Errores comunes
 
-| Nivel | Descripción |
-|---|---|
-| Excelente | Implementa el flujo completo, justifica decisiones, documenta trade-offs y mantiene código limpio. |
-| Bueno | Implementa el flujo principal con estructura clara y documentación suficiente. |
-| En proceso | Funciona parcialmente, pero mezcla responsabilidades o tiene documentación incompleta. |
-| Insuficiente | No ejecuta, no documenta o no evidencia comprensión del tema. |
-
----
-
-## 8. Recursos adicionales
-
-- [ASP.NET Core Web API con Swagger/OpenAPI](https://learn.microsoft.com/aspnet/core/tutorials/web-api-help-pages-using-swagger)
-- [OpenAPI en ASP.NET Core](https://learn.microsoft.com/aspnet/core/fundamentals/openapi/aspnetcore-openapi)
-- [Mejores prácticas REST API](https://learn.microsoft.com/azure/architecture/best-practices/api-design)
-- [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
+- Exponer entidades EF directamente.
+- Devolver siempre 200 aunque haya error.
+- No documentar respuestas de error.
+- Usar nombres inconsistentes.
+- Mezclar comandos y consultas sin claridad.
+- Cambiar contratos sin versionamiento.
+- No proteger endpoints sensibles.
 
 ---
 
-## 9. Cierre de clase
+## 7. Práctica de refuerzo
 
-Preguntas de reflexión:
+Revisar:
 
-1. ¿Qué decisión técnica tomada hoy reduce mantenimiento futuro?
-2. ¿Qué parte del laboratorio sería riesgosa en producción?
-3. ¿Qué métrica, prueba o evidencia usarías para demostrar que el diseño funciona?
+- `CourseApiContract.cs`
+- `ProblemDetailsExample.cs`
+- `OpenApiEndpointMetadata.cs`
+
+---
+
+## 8. Tarea desde cero
+
+Diseñar API para `Students`:
+
+- GET /api/students
+- GET /api/students/{id}
+- POST /api/students
+- PUT /api/students/{id}
+- POST /api/students/{id}/activate
+
+Debe incluir:
+
+- DTOs separados.
+- Códigos HTTP correctos.
+- Errores consistentes.
+- OpenAPI metadata.
+- README con decisiones de contrato.
+
+---
+
+## 9. Recursos adicionales
+
+- Microsoft Learn — ASP.NET Core OpenAPI.
+- Microsoft Learn — Swagger / Swashbuckle / NSwag.
+- Microsoft REST API Guidelines.
+- OpenAPI Specification.
+
+
+---
+
+## Checklist de estudio
+
+- [ ] Comprendí los conceptos principales.
+- [ ] Revisé los diagramas.
+- [ ] Leí las plantillas de código.
+- [ ] Puedo explicar la decisión arquitectónica.
+- [ ] Puedo implementar una variante desde cero.
+- [ ] Registré al menos una decisión en formato ADR.

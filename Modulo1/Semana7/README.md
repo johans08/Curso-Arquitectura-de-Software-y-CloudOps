@@ -1,220 +1,219 @@
 # Semana 7: Seguridad en el diseño: OAuth2 y JWT
 
-> Módulo 1: Arquitectura de Software y Patrones  
-> Duración de clase: **1h30**  
-> Modalidad: **teoría visual + laboratorio guiado + tarea desde cero**
+## Enfoque de la semana
+
+Diseñar autenticación y autorización en APIs .NET con JWT, claims, roles y políticas.
+
+
+## 1. Mapa de aprendizaje
+
+La seguridad no debe agregarse al final.  
+Debe formar parte del diseño.
+
+Esta semana estudia:
+
+- Autenticación.
+- Autorización.
+- JWT.
+- Claims.
+- Roles.
+- Policies.
+- Riesgos comunes.
+- Diseño seguro de endpoints.
 
 ---
 
-## 1. Objetivos de aprendizaje
+## 2. Explicación conceptual detallada
 
-- Diferenciar autenticación, autorización, OAuth2, OpenID Connect y JWT.
-- Emitir y validar JWT en ASP.NET Core para un laboratorio controlado.
-- Proteger endpoints con roles y políticas.
-- Relacionar diseño de APIs con riesgos OWASP API Security Top 10.
+### 2.1 Autenticación vs autorización
+
+Autenticación responde:
+
+> ¿Quién eres?
+
+Autorización responde:
+
+> ¿Qué puedes hacer?
+
+Un usuario puede estar autenticado y aun así no tener permiso para publicar un curso.
+
+### 2.2 JWT
+
+JWT es un token firmado que transporta información en forma de claims.
+
+Ejemplo de claims:
+
+- `sub`: identificador del usuario.
+- `email`: correo.
+- `role`: rol.
+- `exp`: expiración.
+- `iss`: emisor.
+- `aud`: audiencia.
+
+El servidor valida:
+
+- Firma.
+- Emisor.
+- Audiencia.
+- Expiración.
+- Algoritmo.
+- Claims requeridos.
+
+### 2.3 Bearer Token
+
+El cliente envía el token en el header:
+
+```http
+Authorization: Bearer eyJhbGciOi...
+```
+
+El API no necesita guardar sesión en memoria.  
+Esto permite APIs stateless, aunque introduce responsabilidad fuerte en protección del token.
+
+### 2.4 Roles
+
+Los roles agrupan permisos de alto nivel:
+
+- Admin.
+- Instructor.
+- Student.
+
+Son fáciles de entender, pero pueden volverse rígidos.
+
+### 2.5 Policies
+
+Las policies permiten reglas más expresivas.
+
+Ejemplo:
+
+```csharp
+options.AddPolicy("InstructorOnly", policy =>
+    policy.RequireRole("Instructor", "Admin"));
+```
+
+Luego:
+
+```csharp
+.RequireAuthorization("InstructorOnly")
+```
+
+### 2.6 OAuth2
+
+OAuth2 es un framework de autorización.  
+JWT puede ser el formato del access token, pero OAuth2 y JWT no son lo mismo.
+
+En este módulo no se implementa un servidor OAuth2 completo.  
+Se estudia el concepto y se implementa JWT local para entender la base.
+
+En sistemas reales se recomienda usar proveedores como:
+
+- Microsoft Entra ID.
+- Auth0.
+- Duende IdentityServer.
+- Azure AD B2C.
+- Cognito.
+- Keycloak.
 
 ---
 
-## 2. Agenda sugerida de la clase
-
-| Tiempo | Actividad |
-|---|---|
-| 00:00 - 00:10 | Contexto: seguridad como requisito de arquitectura, no como parche. |
-| 00:10 - 00:35 | Teoría visual: flujo de login, token y autorización. |
-| 00:35 - 01:15 | Laboratorio: API con JWT, roles y políticas. |
-| 01:15 - 01:25 | Pruebas con token y análisis OWASP. |
-| 01:25 - 01:30 | Tarea y checklist de seguridad. |
-
----
-
-## 3. Teoría resumida y didáctica
-
-### Idea central
-
-Esta semana se trabaja el tema **Seguridad en el diseño: OAuth2 y JWT** desde una perspectiva práctica. La meta no es memorizar definiciones, sino aprender a tomar decisiones técnicas justificadas y aplicarlas en código .NET.
-
-### Explicación visual
+## 3. Diagrama mental
 
 ```mermaid
 sequenceDiagram
-    participant User
-    participant AuthAPI
-    participant ResourceAPI
+    participant U as Usuario
+    participant UI as Blazor
+    participant AUTH as Auth Endpoint
+    participant API as API protegida
 
-    User->>AuthAPI: POST /auth/login
-    AuthAPI-->>User: JWT firmado
-    User->>ResourceAPI: Authorization: Bearer JWT
-    ResourceAPI->>ResourceAPI: Validar firma, issuer, audience, expiración
-    ResourceAPI-->>User: Recurso autorizado
+    U->>UI: Credenciales
+    UI->>AUTH: Solicita token
+    AUTH-->>UI: JWT
+    UI->>API: Authorization: Bearer JWT
+    API->>API: Valida firma, issuer, audience, expiración
+    API->>API: Evalúa roles/policies
+    API-->>UI: Recurso autorizado
 ```
-
-### Mapa mental rápido
-
-```text
-Autenticación: ¿quién eres?
-Autorización: ¿qué puedes hacer?
-OAuth2: delegación de acceso.
-OpenID Connect: identidad sobre OAuth2.
-JWT: formato de token firmado con claims.
-```
-
-### Conceptos clave
-
-| Concepto | Explicación práctica | Error común |
-|---|---|---|
-| Responsabilidad | Cada componente debe tener una razón clara para cambiar. | Crear clases que validan, calculan, persisten y responden HTTP al mismo tiempo. |
-| Acoplamiento | Grado de dependencia entre partes del sistema. | Consumir clases concretas en todas partes sin contratos. |
-| Contrato | Acuerdo explícito entre componentes o sistemas. | Cambiar requests/responses sin documentarlo. |
-| Trade-off | Costo técnico aceptado por una decisión. | Elegir una tecnología sin explicar qué se gana y qué se pierde. |
 
 ---
 
-## 4. Laboratorio guiado: SecurityLab.Api con JWT y políticas
+## 4. Reglas de diseño seguro
 
-### Resultado esperado
-
-Al final de la sesión, el estudiante tendrá una solución .NET funcional, documentada y lista para extender en la tarea.
-
-### Comandos base
-
-```bash
-# Desde la raíz del repositorio
-cd Modulo1/Semana7/src/SecurityLab.Api && dotnet run
-```
-
-### Paso 1: revisar la estructura
-
-```text
-src/
-└── <Proyecto .NET>
-    ├── Program.cs
-    ├── *.csproj
-    ├── Models/
-    ├── Services/
-    ├── Infrastructure/
-    └── README interno opcional
-```
-
-Puntos para explicar en clase:
-
-1. Qué responsabilidad tiene cada carpeta.
-2. Qué clases pertenecen al dominio y cuáles son infraestructura.
-3. Qué dependencias deberían apuntar hacia contratos y no hacia implementaciones.
-4. Qué partes podrían reemplazarse sin afectar toda la solución.
-
-### Paso 2: ejecutar la aplicación
-
-```bash
-cd Modulo1/Semana7/src/SecurityLab.Api && dotnet run
-```
-
-Si el proyecto es una API, abrir:
-
-```text
-http://localhost:5000
-http://localhost:5000/swagger
-```
-
-> Si el puerto cambia, revisar la consola de `dotnet run`.
-
-### Paso 3: probar los endpoints o ejecución
-
-Usar `curl`, Postman, Insomnia o el archivo `.http` incluido cuando exista.
-
-Ejemplo general:
-
-```bash
-curl http://localhost:5000/health
-```
-
-### Paso 4: identificar la decisión arquitectónica
-
-Durante la clase, el estudiante debe responder:
-
-- ¿Qué problema resuelve esta estructura?
-- ¿Qué parte del código cambiaría si aparece un nuevo requisito?
-- ¿Qué clase sería la primera en crecer peligrosamente?
-- ¿Qué prueba manual demuestra que el flujo funciona?
-
-### Paso 5: extender en vivo
-
-Agregar una pequeña mejora durante la sesión:
-
-- Nuevo endpoint.
-- Nueva regla de negocio.
-- Nueva implementación de una interfaz.
-- Nueva validación.
-- Nuevo caso de error documentado.
-
----
-
-## 5. Checklist de laboratorio
-
-- [ ] El proyecto compila.
-- [ ] El estudiante puede explicar el flujo principal.
-- [ ] Hay separación entre endpoint, lógica y persistencia.
-- [ ] Hay al menos una prueba manual documentada.
-- [ ] El README de la semana fue leído y usado durante la clase.
-- [ ] La mejora en vivo quedó registrada en Git.
-
----
-
-## 6. Tarea desde cero
-
-### Enunciado
-
-Crear desde cero una API de gestión de documentos con login, JWT, roles Admin/User y una política que permita editar solo documentos propios.
-
-### Requisitos mínimos
-
-- Crear un nuevo proyecto independiente dentro de una carpeta `tarea/mi-solucion`.
-- Usar nombres claros en clases, métodos y carpetas.
-- Incluir README propio con:
-  - Problema resuelto.
-  - Diagrama Mermaid.
-  - Instrucciones de ejecución.
-  - Endpoints o ejemplos de uso.
-  - Decisiones técnicas y trade-offs.
-- Subir evidencia a GitHub.
-
-### Criterios de aceptación
-
-| Criterio | Esperado |
+| Regla | Motivo |
 |---|---|
-| Funcionalidad | La solución ejecuta y demuestra el flujo principal. |
-| Diseño | Hay separación clara de responsabilidades. |
-| Código | Métodos pequeños, nombres claros y validaciones básicas. |
-| Documentación | README comprensible para otro desarrollador. |
-| Evidencia | Incluye comandos, capturas o ejemplos JSON. |
+| No guardar secretos en Git | Evita exposición |
+| Usar expiración corta | Reduce impacto de robo |
+| Validar issuer/audience | Evita tokens de otros sistemas |
+| Usar HTTPS | Protege token en tránsito |
+| No poner datos sensibles en JWT | JWT puede ser leído por el cliente |
+| Autorizar por endpoint | No basta con autenticar |
+| Registrar auditoría | Permite trazabilidad |
 
 ---
 
-## 7. Rúbrica sugerida
+## 5. Errores comunes
 
-| Nivel | Descripción |
-|---|---|
-| Excelente | Implementa el flujo completo, justifica decisiones, documenta trade-offs y mantiene código limpio. |
-| Bueno | Implementa el flujo principal con estructura clara y documentación suficiente. |
-| En proceso | Funciona parcialmente, pero mezcla responsabilidades o tiene documentación incompleta. |
-| Insuficiente | No ejecuta, no documenta o no evidencia comprensión del tema. |
+- Confundir autenticación con autorización.
+- Aceptar tokens sin validar issuer.
+- Usar claves débiles.
+- Guardar passwords en texto plano.
+- Poner permisos críticos solo en frontend.
+- Creer que ocultar botones en Blazor protege la API.
+- No proteger endpoints de escritura.
+- Usar tokens sin expiración.
+
+---
+
+## 6. Aplicación en .NET
+
+ASP.NET Core permite configurar JWT Bearer Authentication.
+
+La API valida tokens antes de permitir acceso a endpoints protegidos.
+
+Ejemplo:
+
+```csharp
+app.UseAuthentication();
+app.UseAuthorization();
+```
+
+Orden correcto:
+
+1. Routing.
+2. Authentication.
+3. Authorization.
+4. Endpoints.
+
+---
+
+## 7. Tarea desde cero
+
+Crear seguridad para módulo de estudiantes:
+
+- Endpoint público de login simulado.
+- JWT con rol.
+- Endpoint protegido para crear estudiante.
+- Policy `AdminOrInstructor`.
+- Endpoint solo Admin para desactivar estudiante.
+- README explicando claims y riesgos.
 
 ---
 
 ## 8. Recursos adicionales
 
-- [Configure JWT bearer authentication in ASP.NET Core](https://learn.microsoft.com/aspnet/core/security/authentication/configure-jwt-bearer-authentication)
-- [Role-based authorization in ASP.NET Core](https://learn.microsoft.com/aspnet/core/security/authorization/roles)
-- [Policy-based authorization in ASP.NET Core](https://learn.microsoft.com/aspnet/core/security/authorization/policies)
-- [OAuth 2.0 RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749)
-- [OpenID Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html)
-- [OWASP API Security Top 10](https://owasp.org/API-Security/editions/2023/en/0x00-header/)
+- Microsoft Learn — JWT Bearer Authentication.
+- OWASP API Security Top 10.
+- OAuth 2.0 RFC.
+- JWT.io Introduction.
+- Microsoft Identity Platform documentation.
+
 
 ---
 
-## 9. Cierre de clase
+## Checklist de estudio
 
-Preguntas de reflexión:
-
-1. ¿Qué decisión técnica tomada hoy reduce mantenimiento futuro?
-2. ¿Qué parte del laboratorio sería riesgosa en producción?
-3. ¿Qué métrica, prueba o evidencia usarías para demostrar que el diseño funciona?
+- [ ] Comprendí los conceptos principales.
+- [ ] Revisé los diagramas.
+- [ ] Leí las plantillas de código.
+- [ ] Puedo explicar la decisión arquitectónica.
+- [ ] Puedo implementar una variante desde cero.
+- [ ] Registré al menos una decisión en formato ADR.
