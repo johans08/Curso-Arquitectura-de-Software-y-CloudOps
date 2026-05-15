@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant Client
+    participant API
+    participant Service
+    participant Store
+
+    Client->>API: POST /api/v1/tickets
+    API->>API: Validar DTO
+    API->>Service: Crear ticket
+    Service->>Store: Guardar
+    Store-->>Service: TicketId
+    Service-->>API: Resultado
+    API-->>Client: 201 Created + Location

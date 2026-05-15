@@ -1,0 +1,14 @@
+flowchart TB
+    subgraph SQL[Modelo SQL]
+      A[Products] --> B[Categories]
+      A --> C[Prices]
+    end
+
+    subgraph NoSQL[Modelo documental]
+      D[UserProfile Document]
+      D --> E[Preferences embebidas]
+      D --> F[Addresses embebidas]
+    end
+
+    G[API] --> SQL
+    G --> NoSQL

@@ -1,0 +1,9 @@
+@baseUrl = http://localhost:5000
+
+POST {{baseUrl}}/orders
+Content-Type: application/json
+
+{
+  "customerEmail": "student@example.com",
+  "total": 250
+}

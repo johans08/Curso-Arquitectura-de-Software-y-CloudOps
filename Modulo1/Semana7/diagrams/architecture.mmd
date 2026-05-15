@@ -1,0 +1,10 @@
+sequenceDiagram
+    participant User
+    participant AuthAPI
+    participant ResourceAPI
+
+    User->>AuthAPI: POST /auth/login
+    AuthAPI-->>User: JWT firmado
+    User->>ResourceAPI: Authorization: Bearer JWT
+    ResourceAPI->>ResourceAPI: Validar firma, issuer, audience, expiración
+    ResourceAPI-->>User: Recurso autorizado

@@ -1,0 +1,10 @@
+flowchart LR
+    U[Usuario] --> W[React Frontend]
+    W -->|JWT Bearer| A[TaskFlow.Api]
+    A --> B[Auth Module]
+    A --> C[Projects Module]
+    A --> D[Tasks Module]
+    A --> E[(SQLite)]
+    D --> F[(InMemory Event Bus)]
+    F --> G[Notification Worker]
+    A --> H[Swagger/OpenAPI]

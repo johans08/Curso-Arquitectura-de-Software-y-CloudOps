@@ -1,0 +1,12 @@
+flowchart LR
+    A[HTTP Request] --> B[Endpoint Minimal API]
+    B --> C[IProductService]
+    C --> D[IProductRepository]
+    C --> E[IPricingPolicy]
+    D --> F[(InMemory Store)]
+    E --> G[Reglas de precio]
+
+    classDef api fill:#eef,stroke:#333,stroke-width:1px;
+    classDef domain fill:#efe,stroke:#333,stroke-width:1px;
+    class B api;
+    class C,D,E domain;

@@ -1,0 +1,11 @@
+# Archivo conceptual para discutir evolución a microservicios.
+# No es obligatorio para la clase; sirve como punto de partida.
+services:
+  catalog-api:
+    build: ./Catalog.Api
+    ports:
+      - "5101:8080"
+  orders-api:
+    build: ./Orders.Api
+    ports:
+      - "5102:8080"

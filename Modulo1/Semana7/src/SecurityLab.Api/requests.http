@@ -1,0 +1,23 @@
+@baseUrl = http://localhost:5000
+
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin123"
+}
+
+### Copiar accessToken y pegarlo abajo
+@token = paste-token-here
+
+GET {{baseUrl}}/me
+Authorization: Bearer {{token}}
+
+###
+GET {{baseUrl}}/admin/dashboard
+Authorization: Bearer {{token}}
+
+###
+GET {{baseUrl}}/reports
+Authorization: Bearer {{token}}

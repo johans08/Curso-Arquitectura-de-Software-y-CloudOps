@@ -1,0 +1,17 @@
+classDiagram
+    class NotificationFactory {
+      +Create(channel) INotificationSender
+    }
+    class INotificationSender {
+      <<interface>>
+      +Send(message)
+    }
+    class EmailSender
+    class SmsSender
+    class AuditDecorator
+
+    INotificationSender <|.. EmailSender
+    INotificationSender <|.. SmsSender
+    INotificationSender <|.. AuditDecorator
+    AuditDecorator --> INotificationSender
+    NotificationFactory --> INotificationSender

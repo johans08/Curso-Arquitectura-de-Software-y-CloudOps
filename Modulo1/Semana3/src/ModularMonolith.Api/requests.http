@@ -1,0 +1,15 @@
+@baseUrl = http://localhost:5000
+
+GET {{baseUrl}}/catalog/products
+
+###
+POST {{baseUrl}}/orders
+Content-Type: application/json
+
+{
+  "productId": "11111111-1111-1111-1111-111111111111",
+  "quantity": 2
+}
+
+###
+GET {{baseUrl}}/orders

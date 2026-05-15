@@ -1,0 +1,9 @@
+flowchart LR
+    A[Orders API] -->|OrderCreatedEvent| B[(Event Bus)]
+    B --> C[Email Worker]
+    B --> D[Inventory Worker]
+    B --> E[Analytics Worker]
+
+    C --> F[Enviar email]
+    D --> G[Reservar stock]
+    E --> H[Actualizar métricas]
