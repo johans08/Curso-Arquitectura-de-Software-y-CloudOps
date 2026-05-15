@@ -1,0 +1,5 @@
+flowchart TD
+    App[Aplicación .NET] -->|Archivos de usuario| S3[(Amazon S3)]
+    EC2[Instancia EC2] -->|Disco del sistema| EBS[(Amazon EBS)]
+    API[API] -->|Datos transaccionales| RDS[(Amazon RDS)]
+    S3 --> Lifecycle[Reglas de ciclo de vida]

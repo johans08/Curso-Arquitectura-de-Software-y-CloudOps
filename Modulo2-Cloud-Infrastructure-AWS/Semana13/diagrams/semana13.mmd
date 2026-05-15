@@ -1,0 +1,5 @@
+flowchart LR
+    App[Aplicación] --> Primary[(RDS Primaria AZ-A)]
+    Primary -->|replicación Multi-AZ| Standby[(Standby AZ-B)]
+    Primary -->|replicación lectura| ReadReplica[(Read Replica)]
+    Backup[Backups automáticos] --> Primary

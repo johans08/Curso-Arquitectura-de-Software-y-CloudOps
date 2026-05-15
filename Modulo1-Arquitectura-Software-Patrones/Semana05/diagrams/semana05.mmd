@@ -1,0 +1,7 @@
+flowchart TD
+    A[Crear Orden] --> T{Transacción SQL}
+    T --> O[(Tabla Orders)]
+    T --> X[(Tabla OutboxMessages)]
+    X --> W[Worker en .NET]
+    W --> H[Handler de evento]
+    H --> N[Notificación / Proyección / Integración]

@@ -1,0 +1,6 @@
+flowchart LR
+    Code[Código fuente] --> Build[Stage build con SDK]
+    Build --> Publish[dotnet publish]
+    Publish --> Runtime[Stage runtime ASP.NET]
+    Runtime --> Image[Imagen final]
+    Image --> Registry[Container Registry]

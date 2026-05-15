@@ -1,0 +1,8 @@
+flowchart TD
+    App[Aplicación .NET] --> Logs[Logs estructurados]
+    App --> Metrics[Métricas]
+    AWS[AWS APIs] --> Trail[CloudTrail]
+    Logs --> CW[CloudWatch]
+    Metrics --> CW
+    CW --> Alarm[Alarmas]
+    Trail --> Audit[Auditoría]

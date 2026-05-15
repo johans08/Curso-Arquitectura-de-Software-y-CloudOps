@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant User
+    participant Web as Blazor Web
+    participant Auth as API Auth
+    participant API
+    User->>Web: Credenciales
+    Web->>Auth: POST /login
+    Auth-->>Web: JWT
+    Web->>API: Authorization: Bearer JWT
+    API->>API: Validar firma, issuer, audience y claims
+    API-->>Web: Recurso autorizado

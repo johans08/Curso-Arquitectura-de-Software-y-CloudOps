@@ -1,0 +1,6 @@
+flowchart LR
+    Commit[Commit/Pull Request] --> Build[Build .NET]
+    Build --> Test[Tests]
+    Test --> Package[Publicar artefacto o imagen]
+    Package --> Deploy[Deploy controlado]
+    Deploy --> Verify[Smoke test]

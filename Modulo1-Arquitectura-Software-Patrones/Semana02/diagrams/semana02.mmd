@@ -1,0 +1,7 @@
+classDiagram
+    class INotificationSender { <<interface>> Send(message) }
+    class EmailSender { Send(message) }
+    class LoggingNotificationDecorator { Send(message) }
+    INotificationSender <|.. EmailSender
+    INotificationSender <|.. LoggingNotificationDecorator
+    LoggingNotificationDecorator --> INotificationSender : envuelve

@@ -1,0 +1,8 @@
+flowchart LR
+    Users[Usuarios] --> Router[Balanceador/Router]
+    Router -->|90%| Blue[Versión estable]
+    Router -->|10%| Green[Versión nueva]
+    Metrics[Métricas y errores] --> Decision{¿Continuar?}
+    Green --> Metrics
+    Decision -->|Sí| MoreTraffic[Aumentar tráfico]
+    Decision -->|No| Rollback[Rollback]

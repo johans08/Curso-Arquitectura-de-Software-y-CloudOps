@@ -1,0 +1,10 @@
+sequenceDiagram
+    participant Client
+    participant APIGW as API Gateway
+    participant Lambda
+    participant DB as RDS o DynamoDB
+    Client->>APIGW: HTTP Request
+    APIGW->>Lambda: Evento
+    Lambda->>DB: Lee o escribe datos
+    Lambda-->>APIGW: Respuesta
+    APIGW-->>Client: HTTP Response

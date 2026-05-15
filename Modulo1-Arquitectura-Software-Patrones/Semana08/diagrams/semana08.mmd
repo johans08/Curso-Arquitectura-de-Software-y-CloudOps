@@ -1,0 +1,8 @@
+flowchart LR
+    Browser[Usuario en navegador] --> Blazor[Blazor .NET]
+    Blazor --> API[ASP.NET Core API]
+    API --> App[Application Layer]
+    App --> Domain[Domain Layer]
+    App --> Infra[Infrastructure]
+    Infra --> SQL[(SQL Server)]
+    Infra --> Outbox[(Outbox)]

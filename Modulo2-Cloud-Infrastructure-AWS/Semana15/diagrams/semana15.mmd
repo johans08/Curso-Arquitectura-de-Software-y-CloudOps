@@ -1,0 +1,6 @@
+flowchart LR
+    User[Usuario o Pipeline] --> Role[Rol IAM]
+    Role --> Policy[Política con permisos mínimos]
+    Policy --> Resource[Recurso AWS]
+    Resource --> Tags[Etiquetas de costo]
+    Resource --> KMS[Cifrado KMS]

@@ -1,0 +1,8 @@
+flowchart TD
+    Ingress[Ingress] --> Service[Service]
+    Service --> Pod1[Pod API 1]
+    Service --> Pod2[Pod API 2]
+    Deployment[Deployment] -. controla .-> Pod1
+    Deployment -. controla .-> Pod2
+    Config[ConfigMap/Secret] -. configura .-> Pod1
+    Config -. configura .-> Pod2

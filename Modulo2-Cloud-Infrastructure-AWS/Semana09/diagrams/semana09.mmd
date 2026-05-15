@@ -1,0 +1,9 @@
+flowchart TB
+    Internet((Internet)) --> IGW[Internet Gateway]
+    IGW --> PublicA[Subnet pública AZ-A]
+    IGW --> PublicB[Subnet pública AZ-B]
+    PublicA --> ALB[Application Load Balancer]
+    ALB --> PrivateA[App subnet privada AZ-A]
+    ALB --> PrivateB[App subnet privada AZ-B]
+    PrivateA --> DB[(RDS subnet privada)]
+    PrivateB --> DB

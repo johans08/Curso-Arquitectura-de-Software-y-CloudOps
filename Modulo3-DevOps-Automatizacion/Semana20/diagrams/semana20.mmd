@@ -1,0 +1,6 @@
+flowchart TD
+    App[Aplicación .NET] --> ConfigProvider[Configuration Providers]
+    ConfigProvider --> AppSettings[appsettings.json]
+    ConfigProvider --> Env[Variables de entorno]
+    ConfigProvider --> SSM[AWS Parameter Store]
+    ConfigProvider --> Secrets[AWS Secrets Manager]

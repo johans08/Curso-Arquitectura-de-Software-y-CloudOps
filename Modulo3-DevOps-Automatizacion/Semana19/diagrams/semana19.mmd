@@ -1,0 +1,6 @@
+flowchart LR
+    Code[Archivos .tf] --> Plan[terraform plan]
+    Plan --> Review[Revisión]
+    Review --> Apply[terraform apply]
+    Apply --> AWS[Recursos AWS]
+    Apply --> State[(Terraform State)]

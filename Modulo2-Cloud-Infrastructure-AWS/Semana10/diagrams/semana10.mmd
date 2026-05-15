@@ -1,0 +1,6 @@
+flowchart LR
+    User[Usuarios] --> ALB[Application Load Balancer]
+    ALB --> EC2A[EC2 App AZ-A]
+    ALB --> EC2B[EC2 App AZ-B]
+    ASG[Auto Scaling Group] -. mantiene capacidad .-> EC2A
+    ASG -. mantiene capacidad .-> EC2B

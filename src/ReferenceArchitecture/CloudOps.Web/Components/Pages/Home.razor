@@ -1,0 +1,37 @@
+@page "/"
+@inject CloudOps.Web.Services.ApiClient Api
+
+<h2>Productos</h2>
+<p>Esta pantalla demuestra un frontend .NET consumiendo una API ASP.NET Core.</p>
+
+@if (_products is null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr><th>Nombre</th><th>SKU</th><th>Precio</th></tr>
+        </thead>
+        <tbody>
+        @foreach (var product in _products)
+        {
+            <tr>
+                <td>@product.Name</td>
+                <td>@product.Sku</td>
+                <td>@product.UnitPrice</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IReadOnlyList<CloudOps.Web.Services.ProductViewModel>? _products;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _products = await Api.GetProductsAsync();
+    }
+}

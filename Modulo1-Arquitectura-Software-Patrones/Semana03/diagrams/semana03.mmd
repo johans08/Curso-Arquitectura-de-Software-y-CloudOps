@@ -1,0 +1,13 @@
+flowchart LR
+    subgraph ModularMonolith[Monolito modular]
+      A[Ventas] --> DB[(Base compartida controlada)]
+      B[Inventario] --> DB
+      C[Facturación] --> DB
+    end
+    subgraph Microservices[Microservicios]
+      S1[Servicio Ventas] --> D1[(DB Ventas)]
+      S2[Servicio Inventario] --> D2[(DB Inventario)]
+      S3[Servicio Facturación] --> D3[(DB Facturación)]
+      S1 -. eventos .-> S2
+      S1 -. eventos .-> S3
+    end

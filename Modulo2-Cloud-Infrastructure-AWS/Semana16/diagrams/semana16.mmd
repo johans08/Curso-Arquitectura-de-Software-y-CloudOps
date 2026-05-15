@@ -1,0 +1,12 @@
+flowchart TB
+    Users((Usuarios)) --> ALB[ALB público]
+    ALB --> AppA[EC2 App AZ-A]
+    ALB --> AppB[EC2 App AZ-B]
+    AppA --> RDS[(RDS privado)]
+    AppB --> RDS
+    AppA --> S3[(S3 archivos)]
+    AppB --> S3
+    AppA --> CW[CloudWatch]
+    AppB --> CW
+    IAM[IAM Roles] -. permisos .-> AppA
+    IAM -. permisos .-> AppB

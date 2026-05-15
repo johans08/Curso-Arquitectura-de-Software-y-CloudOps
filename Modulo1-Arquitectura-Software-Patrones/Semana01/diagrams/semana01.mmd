@@ -1,0 +1,8 @@
+flowchart TD
+    Request[HTTP Request] --> Controller[Controller o Minimal API]
+    Controller --> Validator[Validación de entrada]
+    Validator --> Service[Servicio de aplicación]
+    Service --> Domain[Modelo de dominio]
+    Service --> Repository[Repositorio]
+    Repository --> Database[(SQL Server)]
+    Service --> Response[DTO de salida]

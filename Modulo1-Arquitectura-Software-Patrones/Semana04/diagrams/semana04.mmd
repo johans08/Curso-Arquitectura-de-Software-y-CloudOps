@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant Client
+    participant API
+    participant Service
+    participant DB as SQL Server
+    Client->>API: POST /api/orders
+    API->>API: Validar DTO
+    API->>Service: Crear orden
+    Service->>DB: Guardar orden
+    DB-->>Service: Id generado
+    Service-->>API: Resultado
+    API-->>Client: 201 Created + Location

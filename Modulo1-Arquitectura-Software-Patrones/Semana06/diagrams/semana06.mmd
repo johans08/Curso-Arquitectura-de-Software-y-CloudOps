@@ -1,0 +1,7 @@
+flowchart LR
+    Need{Necesidad principal} -->|Transacciones y relaciones| SQL[SQL Server]
+    Need -->|Documento flexible| DOC[NoSQL Documental]
+    Need -->|Lectura rápida por clave| KV[Key-Value]
+    Need -->|Relaciones complejas| GRAPH[Grafo]
+    SQL --> Hybrid[Arquitectura híbrida]
+    DOC --> Hybrid

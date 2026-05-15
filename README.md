@@ -1,228 +1,134 @@
 # Certificación Profesional en Arquitectura de Software y Cloud Ops
 
-## Módulo 1 — Arquitectura de Software y Patrones con .NET + SQL Server
+Repositorio académico completo para impartir y estudiar la certificación durante 6 meses. El diseño del material está inspirado en una experiencia tipo academia: teoría estructurada, lecturas técnicas, diagramas, laboratorios de referencia, evidencias, autoevaluaciones y proyecto integrador.
 
-Este repositorio contiene el material completo de los primeros 2 meses del curso: **8 semanas**, equivalentes al primer módulo formal de la certificación.
+> Repositorio oficial del curso: https://github.com/johans08/Curso-Arquitectura-de-Software-y-CloudOps
 
-La versión actual fue diseñada con una regla práctica:
+## 1. Descripción general
 
-> El estudiante debe poder aprender arquitectura de software usando principalmente **.NET, ASP.NET Core, Blazor y SQL Server**, sin depender de herramientas adicionales como brokers externos, frontend JavaScript, plataformas cloud obligatorias o motores de base de datos separados.
+La certificación prepara al estudiante para diseñar, construir, desplegar, monitorear y automatizar soluciones modernas utilizando arquitectura de software, servicios de nube AWS y prácticas DevOps. El hilo conductor del curso es una aplicación de referencia desarrollada principalmente con **.NET, Blazor y SQL Server**, que luego se despliega y automatiza progresivamente.
 
-El repositorio está orientado a lectura, estudio, práctica guiada y evaluación, en un estilo similar a un repositorio académico tipo **AWS Academy**: primero se explica el concepto, luego se muestra cómo se aplica, después se entrega una práctica de refuerzo y finalmente se propone una tarea independiente.
+## 2. Duración y carga académica
 
----
+- Duración total: **6 meses**.
+- Sesiones sincrónicas: **24 sesiones de 1h30**.
+- Horas sincrónicas: **36 horas**.
+- Carga total de aprovechamiento: **180 horas**.
+- Dedicación sugerida: **7.5 horas semanales** entre clase, lectura, práctica técnica y entregables.
 
-## 1. Objetivo del curso
+## 3. Modalidad de uso del repositorio
 
-Al finalizar este módulo, el estudiante será capaz de:
+Cada semana contiene material para tres momentos:
 
-- Diseñar aplicaciones web profesionales aplicando principios SOLID y Clean Code.
-- Reconocer y aplicar patrones de diseño creacionales, estructurales y de comunicación.
-- Diferenciar arquitectura monolítica, monolito modular y microservicios.
-- Diseñar APIs limpias, documentadas y mantenibles con ASP.NET Core y OpenAPI/Swagger.
-- Implementar comunicación asíncrona sin depender inicialmente de brokers externos.
-- Modelar datos relacionales en SQL Server y comprender cuándo aparece una necesidad NoSQL.
-- Diseñar autenticación y autorización con JWT desde una visión arquitectónica.
-- Construir un backend y frontend moderno usando únicamente .NET y SQL Server.
+1. **Estudio previo o posterior:** explicación conceptual detallada, diagramas, vocabulario técnico y decisiones de arquitectura.
+2. **Práctica técnica:** laboratorio de referencia, plantillas y retos para aplicar el tema.
+3. **Evidencia evaluable:** tarea semanal que debe subirse a GitHub y registrarse según las instrucciones del instructor.
 
----
+## 4. Entregas y GitHub
 
-## 2. Herramientas oficiales del módulo
+Todo estudiante debe crear una cuenta en GitHub. Las tareas se desarrollan en repositorios propios del estudiante. Mientras el sistema propio de evaluación no esté disponible, el estudiante debe subir el enlace de su repositorio o pull request en Classroom.
 
-### Herramientas principales
-
-| Área | Herramienta |
-|---|---|
-| Lenguaje | C# |
-| Framework backend | ASP.NET Core |
-| Frontend | Blazor |
-| ORM | Entity Framework Core |
-| Base de datos principal | SQL Server / SQL Server Express LocalDB |
-| Documentación API | OpenAPI / Swagger UI |
-| Seguridad | JWT Bearer Authentication |
-| Comunicación asíncrona | SQL Server Outbox + BackgroundService |
-| Tiempo real opcional | SignalR |
-| IDE sugerido | Visual Studio 2022/2026 o Visual Studio Code |
-
-### Regla pedagógica
-
-Durante este módulo se evita introducir herramientas que distraigan del objetivo principal.  
-Por eso:
-
-- No se usa React, Angular ni Vue.
-- No se usa Node.js.
-- No se usa RabbitMQ, Kafka ni Azure Service Bus en el laboratorio principal.
-- No se exige Docker.
-- No se exige cloud.
-- No se exige MongoDB ni Cosmos DB para el desarrollo principal.
-
-La semana de **SQL vs NoSQL** explica NoSQL desde arquitectura y permite una práctica controlada usando JSON en SQL Server. También incluye una sección opcional para discutir cómo sería una base NoSQL real, sin convertirla en dependencia del módulo.
-
----
-
-## 3. Duración y modalidad
-
-| Elemento | Detalle |
-|---|---|
-| Duración total del curso completo | 6 meses |
-| Sesiones sincrónicas totales | 24 |
-| Duración por sesión | 1h30 |
-| Este repositorio cubre | Primeros 2 meses / 8 semanas |
-| Enfoque | Arquitectura, diseño, patrones y fundamentos Cloud Ops |
-| Modalidad | Lectura académica + práctica de refuerzo + tarea independiente |
-
----
-
-## 4. Cronograma del Módulo 1
-
-| Semana | Tema | Resultado esperado |
-|---|---|---|
-| Semana 1 | Principios SOLID y Clean Code aplicados a entornos web | Diseñar servicios, controladores y entidades con bajo acoplamiento |
-| Semana 2 | Patrones de diseño esenciales | Aplicar Factory, Strategy, Adapter, Decorator y Facade en .NET |
-| Semana 3 | Arquitectura monolítica vs microservicios | Decidir cuándo usar monolito, monolito modular o microservicios |
-| Semana 4 | Diseño y documentación de APIs profesionales | Diseñar endpoints, contratos, errores y documentación OpenAPI |
-| Semana 5 | Comunicación asíncrona y patrones de mensajería | Implementar Outbox Pattern con SQL Server y BackgroundService |
-| Semana 6 | Estrategias de bases de datos: SQL vs NoSQL | Modelar datos relacionales y documentales de forma razonada |
-| Semana 7 | Seguridad en el diseño: OAuth2 y JWT | Diseñar autenticación, autorización, claims, roles y políticas |
-| Semana 8 | Laboratorio integrador backend + frontend moderno | Integrar API, SQL Server, Blazor, JWT, Outbox y documentación |
-
----
-
-## 5. Estructura del repositorio
+Formato recomendado de entrega semanal:
 
 ```text
-Certificacion-Arquitectura-Software-CloudOps-DotNet-SqlServer-Modulo1/
-│
+Nombre completo:
+Semana:
+Repositorio GitHub:
+Rama o Pull Request:
+Resumen de lo implementado:
+Decisiones técnicas tomadas:
+Evidencia de ejecución:
+```
+
+## 5. Enlace de clases
+
+El enlace de clases no cambia durante el curso:
+
+- Google Meet: https://meet.google.com/qms-iube-vak
+- Zona horaria: America/Costa_Rica
+- Horario base informado: viernes de 7:00 p.m. a 8:30 p.m.
+
+## 6. Estructura del repositorio
+
+```text
+.
 ├── README.md
 ├── docs/
-│   ├── 00-guia-del-estudiante.md
-│   ├── 01-entorno-unico-dotnet-sqlserver.md
-│   ├── 02-arquitectura-referencia.md
-│   ├── 03-glosario-arquitectura.md
-│   ├── 04-rubrica-evaluacion.md
-│   └── adr-template.md
-│
+├── database/
 ├── src/
-│   ├── README.md
-│   ├── Directory.Build.props
-│   ├── ArchitectureAcademy.Api/
-│   ├── ArchitectureAcademy.Frontend/
-│   ├── ArchitectureAcademy.SharedKernel/
-│   └── Database/
-│
-├── Modulo1/
-│   ├── Semana1/
-│   ├── Semana2/
-│   ├── Semana3/
-│   ├── Semana4/
-│   ├── Semana5/
-│   ├── Semana6/
-│   ├── Semana7/
-│   └── Semana8/
-│
-└── ProyectoIntegrador/
-    ├── README.md
-    ├── arquitectura/
-    ├── backend/
-    ├── frontend/
-    └── database/
+│   └── ReferenceArchitecture/
+├── infrastructure/
+├── Modulo1-Arquitectura-Software-Patrones/
+├── Modulo2-Cloud-Infrastructure-AWS/
+├── Modulo3-DevOps-Automatizacion/
+└── Evaluaciones/
 ```
 
----
+## 7. Cronograma general
 
-## 6. Cómo estudiar cada semana
+| Módulo | Meses | Enfoque | Semanas |
+|---|---:|---|---:|
+| Módulo 1 | 1 y 2 | Arquitectura de Software y Patrones | 1-8 |
+| Módulo 2 | 3 y 4 | Cloud Infrastructure & AWS | 9-16 |
+| Módulo 3 | 5 y 6 | DevOps & Automatización | 17-24 |
 
-Cada semana tiene un `README.md` con esta estructura:
+## 8. Sistema de evaluación
 
-1. **Mapa de aprendizaje**
-2. **Explicación conceptual detallada**
-3. **Diagramas Mermaid**
-4. **Aplicación en .NET + SQL Server**
-5. **Plantillas de código**
-6. **Errores comunes**
-7. **Tarea desde cero**
-8. **Criterios de evaluación**
-9. **Recursos adicionales**
+| Componente | Descripción | Ponderación |
+|---|---|---:|
+| Prácticas semanales | Ejercicios técnicos de código y nube realizados tras cada clase. | 40% |
+| Examen modular | Una prueba técnica al finalizar cada módulo. | 30% |
+| Proyecto integrador | Caso real de una infraestructura Cloud completa y automatizada. | 30% |
+| Total |  | 100% |
 
-La idea no es copiar comandos mecánicamente. La idea es que el estudiante entienda por qué existe cada decisión arquitectónica.
-
----
-
-## 7. Ruta de instalación sugerida
-
-Directorio solicitado:
-
-```powershell
-D:\Personal\Cursos\Arquitectura de Software y Cloud Ops
-```
-
-Para extraer este repositorio:
-
-```powershell
-Expand-Archive -Path .\Certificacion-Arquitectura-Software-CloudOps-DotNet-SqlServer-Modulo1.zip -DestinationPath "D:\Personal\Cursos\Arquitectura de Software y Cloud Ops"
-```
-
----
-
-## 8. Convención de arquitectura usada
-
-Durante el módulo se trabaja con una arquitectura progresiva:
+## 9. Ruta de aprendizaje
 
 ```mermaid
 flowchart LR
-    UI[Blazor Frontend]
-    API[ASP.NET Core API]
-    APP[Application Services]
-    DOMAIN[Domain Model]
-    INFRA[Infrastructure]
-    DB[(SQL Server)]
-
-    UI --> API
-    API --> APP
-    APP --> DOMAIN
-    APP --> INFRA
-    INFRA --> DB
+    A[Arquitectura y patrones] --> B[.NET + SQL Server + Blazor]
+    B --> C[AWS Networking, Compute, Storage]
+    C --> D[Observabilidad, Seguridad y Costos]
+    D --> E[Docker, Kubernetes y Terraform]
+    E --> F[CI/CD y despliegues progresivos]
+    F --> G[Proyecto final]
 ```
 
-La aplicación se entiende como capas de responsabilidad:
+## 10. Requisitos técnicos sugeridos
 
-| Capa | Responsabilidad |
-|---|---|
-| Frontend | Presentación, formularios, validaciones de experiencia de usuario |
-| API | Contratos HTTP, autenticación, autorización, documentación |
-| Application | Casos de uso, orquestación, transacciones |
-| Domain | Reglas de negocio, entidades, invariantes |
-| Infrastructure | Persistencia, SQL Server, integración externa |
-| Database | Datos, restricciones, índices, trazabilidad |
+### Base local para los primeros módulos
 
----
+- Cuenta en GitHub.
+- .NET SDK 8 o superior.
+- Visual Studio 2022, Visual Studio Code o JetBrains Rider.
+- SQL Server Developer Edition, SQL Server Express o LocalDB.
+- Navegador web moderno.
 
-## 9. Proyecto integrador del módulo
+### Para los módulos de nube y DevOps
 
-Al finalizar la semana 8, el estudiante construye una plataforma llamada:
+- Cuenta AWS Academy, AWS Educate o cuenta personal con control de presupuesto.
+- AWS CLI.
+- Docker Desktop o alternativa compatible.
+- Terraform.
+- GitHub Actions habilitado en el repositorio del estudiante.
 
-# AcademyOps
+## 11. Aplicación de referencia
 
-Una aplicación académica sencilla para administrar cursos, estudiantes, matrículas, tareas y notificaciones internas.
+La carpeta `src/ReferenceArchitecture` contiene una aplicación base para trabajar los conceptos del curso:
 
-Debe incluir:
+- API REST con ASP.NET Core.
+- Frontend con Blazor.
+- Persistencia con SQL Server y Entity Framework Core.
+- Patrón Outbox para comunicación asíncrona sin requerir un broker externo en los primeros módulos.
+- Estructura por capas para practicar arquitectura limpia.
 
-- Backend ASP.NET Core.
-- Frontend Blazor.
-- SQL Server.
-- Entity Framework Core.
-- OpenAPI/Swagger.
-- JWT.
-- Roles.
-- Outbox Pattern.
-- Auditoría básica.
-- Decisiones arquitectónicas documentadas.
-- Diagramas.
-- README técnico.
+## 12. Recomendación para instructores
 
----
+Este repositorio puede usarse de dos maneras:
 
-## 10. Nota sobre .NET y versiones
+1. Como **libro técnico del curso**, leyendo cada README semanal antes de la sesión.
+2. Como **base de laboratorio**, donde el estudiante implementa progresivamente la solución y documenta decisiones en GitHub.
 
-El material está preparado para `net10.0` por ser una versión LTS moderna.  
-Si el estudiante usa una versión anterior, puede ajustar los archivos `.csproj` a `net8.0`, siempre que tenga el SDK correspondiente instalado.
+## 13. Libro académico del curso
+
+Para una lectura más continua, revise `docs/07_Libro_academico_del_curso.md`. Este archivo resume el razonamiento técnico de las 24 semanas con un enfoque más conceptual y menos dependiente de instrucciones paso a paso.
+
